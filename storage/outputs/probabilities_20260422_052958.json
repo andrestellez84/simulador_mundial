@@ -1,0 +1,970 @@
+{
+  "metadata": {
+    "run_timestamp": "2026-04-22T05:29:58.903213+00:00",
+    "n_simulations": 100,
+    "parameters": {
+      "mu": 1.25,
+      "rho": -0.1,
+      "K": 60,
+      "HFA_full": 100.0
+    }
+  },
+  "initial_elo": {
+    "CAN": 1500,
+    "NED": 1500,
+    "CPV": 1500,
+    "SWE": 1500,
+    "URU": 1500,
+    "MAR": 1500,
+    "IRN": 1500,
+    "CUW": 1500,
+    "BRA": 1500,
+    "ESP": 1500,
+    "CZE": 1500,
+    "FRA": 1500,
+    "QAT": 1500,
+    "SUI": 1500,
+    "HAI": 1500,
+    "KSA": 1500,
+    "ENG": 1500,
+    "IRQ": 1500,
+    "ALG": 1500,
+    "KOR": 1500,
+    "TUN": 1500,
+    "NOR": 1500,
+    "JPN": 1500,
+    "EGY": 1500,
+    "AUT": 1500,
+    "UZB": 1500,
+    "SEN": 1500,
+    "COL": 1500,
+    "ECU": 1500,
+    "CRO": 1500,
+    "RSA": 1500,
+    "AUS": 1500,
+    "BIH": 1500,
+    "GER": 1500,
+    "TUR": 1500,
+    "CIV": 1500,
+    "BEL": 1500,
+    "COD": 1500,
+    "NZL": 1500,
+    "PAN": 1500,
+    "SCO": 1500,
+    "GHA": 1500,
+    "ARG": 1500,
+    "POR": 1500,
+    "USA": 1500,
+    "JOR": 1500,
+    "PAR": 1500,
+    "MEX": 1500
+  },
+  "teams": {
+    "MEX": {
+      "team_code": "MEX",
+      "group": "A",
+      "group_position_probs": {
+        "1st": 0.26,
+        "2nd": 0.26,
+        "3rd": 0.22,
+        "4th": 0.26
+      },
+      "advance_to_r32": 0.68,
+      "advance_to_r16": 0.35,
+      "advance_to_qf": 0.13,
+      "advance_to_sf": 0.08,
+      "advance_to_final": 0.04,
+      "champion": 0.01,
+      "expected_points_group": 4.14,
+      "expected_goals_for_group": 0.0
+    },
+    "RSA": {
+      "team_code": "RSA",
+      "group": "A",
+      "group_position_probs": {
+        "1st": 0.27,
+        "2nd": 0.3,
+        "3rd": 0.19,
+        "4th": 0.24
+      },
+      "advance_to_r32": 0.7,
+      "advance_to_r16": 0.41,
+      "advance_to_qf": 0.2,
+      "advance_to_sf": 0.09,
+      "advance_to_final": 0.05,
+      "champion": 0.02,
+      "expected_points_group": 4.31,
+      "expected_goals_for_group": 0.0
+    },
+    "KOR": {
+      "team_code": "KOR",
+      "group": "A",
+      "group_position_probs": {
+        "1st": 0.2,
+        "2nd": 0.26,
+        "3rd": 0.24,
+        "4th": 0.3
+      },
+      "advance_to_r32": 0.58,
+      "advance_to_r16": 0.34,
+      "advance_to_qf": 0.14,
+      "advance_to_sf": 0.1,
+      "advance_to_final": 0.03,
+      "champion": 0.0,
+      "expected_points_group": 3.79,
+      "expected_goals_for_group": 0.0
+    },
+    "CZE": {
+      "team_code": "CZE",
+      "group": "A",
+      "group_position_probs": {
+        "1st": 0.27,
+        "2nd": 0.18,
+        "3rd": 0.35,
+        "4th": 0.2
+      },
+      "advance_to_r32": 0.7,
+      "advance_to_r16": 0.26,
+      "advance_to_qf": 0.15,
+      "advance_to_sf": 0.09,
+      "advance_to_final": 0.03,
+      "champion": 0.01,
+      "expected_points_group": 4.1,
+      "expected_goals_for_group": 0.0
+    },
+    "CAN": {
+      "team_code": "CAN",
+      "group": "B",
+      "group_position_probs": {
+        "1st": 0.19,
+        "2nd": 0.22,
+        "3rd": 0.36,
+        "4th": 0.23
+      },
+      "advance_to_r32": 0.65,
+      "advance_to_r16": 0.36,
+      "advance_to_qf": 0.13,
+      "advance_to_sf": 0.04,
+      "advance_to_final": 0.02,
+      "champion": 0.01,
+      "expected_points_group": 3.99,
+      "expected_goals_for_group": 0.0
+    },
+    "BIH": {
+      "team_code": "BIH",
+      "group": "B",
+      "group_position_probs": {
+        "1st": 0.31,
+        "2nd": 0.29,
+        "3rd": 0.19,
+        "4th": 0.21
+      },
+      "advance_to_r32": 0.74,
+      "advance_to_r16": 0.44,
+      "advance_to_qf": 0.2,
+      "advance_to_sf": 0.12,
+      "advance_to_final": 0.07,
+      "champion": 0.03,
+      "expected_points_group": 4.53,
+      "expected_goals_for_group": 0.0
+    },
+    "QAT": {
+      "team_code": "QAT",
+      "group": "B",
+      "group_position_probs": {
+        "1st": 0.26,
+        "2nd": 0.24,
+        "3rd": 0.22,
+        "4th": 0.28
+      },
+      "advance_to_r32": 0.63,
+      "advance_to_r16": 0.31,
+      "advance_to_qf": 0.18,
+      "advance_to_sf": 0.08,
+      "advance_to_final": 0.06,
+      "champion": 0.03,
+      "expected_points_group": 3.73,
+      "expected_goals_for_group": 0.0
+    },
+    "SUI": {
+      "team_code": "SUI",
+      "group": "B",
+      "group_position_probs": {
+        "1st": 0.24,
+        "2nd": 0.25,
+        "3rd": 0.23,
+        "4th": 0.28
+      },
+      "advance_to_r32": 0.62,
+      "advance_to_r16": 0.31,
+      "advance_to_qf": 0.16,
+      "advance_to_sf": 0.07,
+      "advance_to_final": 0.03,
+      "champion": 0.0,
+      "expected_points_group": 4.16,
+      "expected_goals_for_group": 0.0
+    },
+    "BRA": {
+      "team_code": "BRA",
+      "group": "C",
+      "group_position_probs": {
+        "1st": 0.29,
+        "2nd": 0.21,
+        "3rd": 0.25,
+        "4th": 0.25
+      },
+      "advance_to_r32": 0.68,
+      "advance_to_r16": 0.31,
+      "advance_to_qf": 0.18,
+      "advance_to_sf": 0.07,
+      "advance_to_final": 0.03,
+      "champion": 0.01,
+      "expected_points_group": 4.28,
+      "expected_goals_for_group": 0.0
+    },
+    "MAR": {
+      "team_code": "MAR",
+      "group": "C",
+      "group_position_probs": {
+        "1st": 0.24,
+        "2nd": 0.37,
+        "3rd": 0.16,
+        "4th": 0.23
+      },
+      "advance_to_r32": 0.72,
+      "advance_to_r16": 0.31,
+      "advance_to_qf": 0.18,
+      "advance_to_sf": 0.09,
+      "advance_to_final": 0.03,
+      "champion": 0.01,
+      "expected_points_group": 4.3,
+      "expected_goals_for_group": 0.0
+    },
+    "HAI": {
+      "team_code": "HAI",
+      "group": "C",
+      "group_position_probs": {
+        "1st": 0.21,
+        "2nd": 0.23,
+        "3rd": 0.33,
+        "4th": 0.23
+      },
+      "advance_to_r32": 0.63,
+      "advance_to_r16": 0.3,
+      "advance_to_qf": 0.15,
+      "advance_to_sf": 0.08,
+      "advance_to_final": 0.05,
+      "champion": 0.01,
+      "expected_points_group": 3.85,
+      "expected_goals_for_group": 0.0
+    },
+    "SCO": {
+      "team_code": "SCO",
+      "group": "C",
+      "group_position_probs": {
+        "1st": 0.26,
+        "2nd": 0.19,
+        "3rd": 0.26,
+        "4th": 0.29
+      },
+      "advance_to_r32": 0.59,
+      "advance_to_r16": 0.33,
+      "advance_to_qf": 0.16,
+      "advance_to_sf": 0.08,
+      "advance_to_final": 0.03,
+      "champion": 0.0,
+      "expected_points_group": 3.94,
+      "expected_goals_for_group": 0.0
+    },
+    "USA": {
+      "team_code": "USA",
+      "group": "D",
+      "group_position_probs": {
+        "1st": 0.25,
+        "2nd": 0.29,
+        "3rd": 0.23,
+        "4th": 0.23
+      },
+      "advance_to_r32": 0.69,
+      "advance_to_r16": 0.41,
+      "advance_to_qf": 0.19,
+      "advance_to_sf": 0.09,
+      "advance_to_final": 0.08,
+      "champion": 0.04,
+      "expected_points_group": 4.03,
+      "expected_goals_for_group": 0.0
+    },
+    "PAR": {
+      "team_code": "PAR",
+      "group": "D",
+      "group_position_probs": {
+        "1st": 0.23,
+        "2nd": 0.31,
+        "3rd": 0.22,
+        "4th": 0.24
+      },
+      "advance_to_r32": 0.68,
+      "advance_to_r16": 0.36,
+      "advance_to_qf": 0.12,
+      "advance_to_sf": 0.05,
+      "advance_to_final": 0.04,
+      "champion": 0.03,
+      "expected_points_group": 3.94,
+      "expected_goals_for_group": 0.0
+    },
+    "AUS": {
+      "team_code": "AUS",
+      "group": "D",
+      "group_position_probs": {
+        "1st": 0.21,
+        "2nd": 0.23,
+        "3rd": 0.25,
+        "4th": 0.31
+      },
+      "advance_to_r32": 0.61,
+      "advance_to_r16": 0.34,
+      "advance_to_qf": 0.17,
+      "advance_to_sf": 0.08,
+      "advance_to_final": 0.05,
+      "champion": 0.03,
+      "expected_points_group": 3.92,
+      "expected_goals_for_group": 0.0
+    },
+    "TUR": {
+      "team_code": "TUR",
+      "group": "D",
+      "group_position_probs": {
+        "1st": 0.31,
+        "2nd": 0.17,
+        "3rd": 0.3,
+        "4th": 0.22
+      },
+      "advance_to_r32": 0.67,
+      "advance_to_r16": 0.35,
+      "advance_to_qf": 0.23,
+      "advance_to_sf": 0.09,
+      "advance_to_final": 0.02,
+      "champion": 0.02,
+      "expected_points_group": 4.42,
+      "expected_goals_for_group": 0.0
+    },
+    "GER": {
+      "team_code": "GER",
+      "group": "E",
+      "group_position_probs": {
+        "1st": 0.29,
+        "2nd": 0.21,
+        "3rd": 0.28,
+        "4th": 0.22
+      },
+      "advance_to_r32": 0.73,
+      "advance_to_r16": 0.36,
+      "advance_to_qf": 0.15,
+      "advance_to_sf": 0.07,
+      "advance_to_final": 0.03,
+      "champion": 0.03,
+      "expected_points_group": 4.37,
+      "expected_goals_for_group": 0.0
+    },
+    "CUW": {
+      "team_code": "CUW",
+      "group": "E",
+      "group_position_probs": {
+        "1st": 0.21,
+        "2nd": 0.31,
+        "3rd": 0.19,
+        "4th": 0.29
+      },
+      "advance_to_r32": 0.69,
+      "advance_to_r16": 0.4,
+      "advance_to_qf": 0.18,
+      "advance_to_sf": 0.1,
+      "advance_to_final": 0.05,
+      "champion": 0.03,
+      "expected_points_group": 3.88,
+      "expected_goals_for_group": 0.0
+    },
+    "CIV": {
+      "team_code": "CIV",
+      "group": "E",
+      "group_position_probs": {
+        "1st": 0.27,
+        "2nd": 0.22,
+        "3rd": 0.26,
+        "4th": 0.25
+      },
+      "advance_to_r32": 0.64,
+      "advance_to_r16": 0.33,
+      "advance_to_qf": 0.17,
+      "advance_to_sf": 0.08,
+      "advance_to_final": 0.06,
+      "champion": 0.03,
+      "expected_points_group": 4.02,
+      "expected_goals_for_group": 0.0
+    },
+    "ECU": {
+      "team_code": "ECU",
+      "group": "E",
+      "group_position_probs": {
+        "1st": 0.23,
+        "2nd": 0.26,
+        "3rd": 0.27,
+        "4th": 0.24
+      },
+      "advance_to_r32": 0.67,
+      "advance_to_r16": 0.37,
+      "advance_to_qf": 0.18,
+      "advance_to_sf": 0.1,
+      "advance_to_final": 0.06,
+      "champion": 0.03,
+      "expected_points_group": 4.14,
+      "expected_goals_for_group": 0.0
+    },
+    "NED": {
+      "team_code": "NED",
+      "group": "F",
+      "group_position_probs": {
+        "1st": 0.3,
+        "2nd": 0.25,
+        "3rd": 0.24,
+        "4th": 0.21
+      },
+      "advance_to_r32": 0.72,
+      "advance_to_r16": 0.3,
+      "advance_to_qf": 0.17,
+      "advance_to_sf": 0.11,
+      "advance_to_final": 0.07,
+      "champion": 0.04,
+      "expected_points_group": 4.32,
+      "expected_goals_for_group": 0.0
+    },
+    "JPN": {
+      "team_code": "JPN",
+      "group": "F",
+      "group_position_probs": {
+        "1st": 0.16,
+        "2nd": 0.27,
+        "3rd": 0.33,
+        "4th": 0.24
+      },
+      "advance_to_r32": 0.63,
+      "advance_to_r16": 0.28,
+      "advance_to_qf": 0.17,
+      "advance_to_sf": 0.08,
+      "advance_to_final": 0.05,
+      "champion": 0.02,
+      "expected_points_group": 3.81,
+      "expected_goals_for_group": 0.0
+    },
+    "SWE": {
+      "team_code": "SWE",
+      "group": "F",
+      "group_position_probs": {
+        "1st": 0.23,
+        "2nd": 0.27,
+        "3rd": 0.21,
+        "4th": 0.29
+      },
+      "advance_to_r32": 0.64,
+      "advance_to_r16": 0.26,
+      "advance_to_qf": 0.11,
+      "advance_to_sf": 0.06,
+      "advance_to_final": 0.02,
+      "champion": 0.01,
+      "expected_points_group": 4.06,
+      "expected_goals_for_group": 0.0
+    },
+    "TUN": {
+      "team_code": "TUN",
+      "group": "F",
+      "group_position_probs": {
+        "1st": 0.31,
+        "2nd": 0.21,
+        "3rd": 0.22,
+        "4th": 0.26
+      },
+      "advance_to_r32": 0.71,
+      "advance_to_r16": 0.3,
+      "advance_to_qf": 0.19,
+      "advance_to_sf": 0.09,
+      "advance_to_final": 0.03,
+      "champion": 0.01,
+      "expected_points_group": 4.09,
+      "expected_goals_for_group": 0.0
+    },
+    "BEL": {
+      "team_code": "BEL",
+      "group": "G",
+      "group_position_probs": {
+        "1st": 0.24,
+        "2nd": 0.3,
+        "3rd": 0.25,
+        "4th": 0.21
+      },
+      "advance_to_r32": 0.69,
+      "advance_to_r16": 0.31,
+      "advance_to_qf": 0.12,
+      "advance_to_sf": 0.05,
+      "advance_to_final": 0.02,
+      "champion": 0.0,
+      "expected_points_group": 4.26,
+      "expected_goals_for_group": 0.0
+    },
+    "EGY": {
+      "team_code": "EGY",
+      "group": "G",
+      "group_position_probs": {
+        "1st": 0.15,
+        "2nd": 0.29,
+        "3rd": 0.3,
+        "4th": 0.26
+      },
+      "advance_to_r32": 0.64,
+      "advance_to_r16": 0.27,
+      "advance_to_qf": 0.11,
+      "advance_to_sf": 0.06,
+      "advance_to_final": 0.03,
+      "champion": 0.02,
+      "expected_points_group": 3.43,
+      "expected_goals_for_group": 0.0
+    },
+    "IRN": {
+      "team_code": "IRN",
+      "group": "G",
+      "group_position_probs": {
+        "1st": 0.32,
+        "2nd": 0.23,
+        "3rd": 0.18,
+        "4th": 0.27
+      },
+      "advance_to_r32": 0.69,
+      "advance_to_r16": 0.36,
+      "advance_to_qf": 0.19,
+      "advance_to_sf": 0.12,
+      "advance_to_final": 0.06,
+      "champion": 0.03,
+      "expected_points_group": 4.37,
+      "expected_goals_for_group": 0.0
+    },
+    "NZL": {
+      "team_code": "NZL",
+      "group": "G",
+      "group_position_probs": {
+        "1st": 0.29,
+        "2nd": 0.18,
+        "3rd": 0.27,
+        "4th": 0.26
+      },
+      "advance_to_r32": 0.66,
+      "advance_to_r16": 0.35,
+      "advance_to_qf": 0.14,
+      "advance_to_sf": 0.09,
+      "advance_to_final": 0.0,
+      "champion": 0.0,
+      "expected_points_group": 4.07,
+      "expected_goals_for_group": 0.0
+    },
+    "ESP": {
+      "team_code": "ESP",
+      "group": "H",
+      "group_position_probs": {
+        "1st": 0.22,
+        "2nd": 0.34,
+        "3rd": 0.19,
+        "4th": 0.25
+      },
+      "advance_to_r32": 0.7,
+      "advance_to_r16": 0.32,
+      "advance_to_qf": 0.16,
+      "advance_to_sf": 0.09,
+      "advance_to_final": 0.05,
+      "champion": 0.03,
+      "expected_points_group": 4.11,
+      "expected_goals_for_group": 0.0
+    },
+    "CPV": {
+      "team_code": "CPV",
+      "group": "H",
+      "group_position_probs": {
+        "1st": 0.26,
+        "2nd": 0.29,
+        "3rd": 0.26,
+        "4th": 0.19
+      },
+      "advance_to_r32": 0.73,
+      "advance_to_r16": 0.31,
+      "advance_to_qf": 0.16,
+      "advance_to_sf": 0.06,
+      "advance_to_final": 0.04,
+      "champion": 0.03,
+      "expected_points_group": 4.2,
+      "expected_goals_for_group": 0.0
+    },
+    "KSA": {
+      "team_code": "KSA",
+      "group": "H",
+      "group_position_probs": {
+        "1st": 0.29,
+        "2nd": 0.16,
+        "3rd": 0.34,
+        "4th": 0.21
+      },
+      "advance_to_r32": 0.68,
+      "advance_to_r16": 0.28,
+      "advance_to_qf": 0.19,
+      "advance_to_sf": 0.1,
+      "advance_to_final": 0.04,
+      "champion": 0.02,
+      "expected_points_group": 4.17,
+      "expected_goals_for_group": 0.0
+    },
+    "URU": {
+      "team_code": "URU",
+      "group": "H",
+      "group_position_probs": {
+        "1st": 0.23,
+        "2nd": 0.21,
+        "3rd": 0.21,
+        "4th": 0.35
+      },
+      "advance_to_r32": 0.59,
+      "advance_to_r16": 0.33,
+      "advance_to_qf": 0.2,
+      "advance_to_sf": 0.1,
+      "advance_to_final": 0.06,
+      "champion": 0.03,
+      "expected_points_group": 3.82,
+      "expected_goals_for_group": 0.0
+    },
+    "FRA": {
+      "team_code": "FRA",
+      "group": "I",
+      "group_position_probs": {
+        "1st": 0.27,
+        "2nd": 0.23,
+        "3rd": 0.23,
+        "4th": 0.27
+      },
+      "advance_to_r32": 0.61,
+      "advance_to_r16": 0.31,
+      "advance_to_qf": 0.18,
+      "advance_to_sf": 0.1,
+      "advance_to_final": 0.04,
+      "champion": 0.03,
+      "expected_points_group": 4.01,
+      "expected_goals_for_group": 0.0
+    },
+    "SEN": {
+      "team_code": "SEN",
+      "group": "I",
+      "group_position_probs": {
+        "1st": 0.26,
+        "2nd": 0.27,
+        "3rd": 0.27,
+        "4th": 0.2
+      },
+      "advance_to_r32": 0.71,
+      "advance_to_r16": 0.38,
+      "advance_to_qf": 0.13,
+      "advance_to_sf": 0.05,
+      "advance_to_final": 0.01,
+      "champion": 0.0,
+      "expected_points_group": 4.2,
+      "expected_goals_for_group": 0.0
+    },
+    "IRQ": {
+      "team_code": "IRQ",
+      "group": "I",
+      "group_position_probs": {
+        "1st": 0.22,
+        "2nd": 0.26,
+        "3rd": 0.26,
+        "4th": 0.26
+      },
+      "advance_to_r32": 0.67,
+      "advance_to_r16": 0.35,
+      "advance_to_qf": 0.18,
+      "advance_to_sf": 0.07,
+      "advance_to_final": 0.04,
+      "champion": 0.02,
+      "expected_points_group": 4.08,
+      "expected_goals_for_group": 0.0
+    },
+    "NOR": {
+      "team_code": "NOR",
+      "group": "I",
+      "group_position_probs": {
+        "1st": 0.25,
+        "2nd": 0.24,
+        "3rd": 0.24,
+        "4th": 0.27
+      },
+      "advance_to_r32": 0.67,
+      "advance_to_r16": 0.37,
+      "advance_to_qf": 0.18,
+      "advance_to_sf": 0.11,
+      "advance_to_final": 0.04,
+      "champion": 0.0,
+      "expected_points_group": 3.95,
+      "expected_goals_for_group": 0.0
+    },
+    "ARG": {
+      "team_code": "ARG",
+      "group": "J",
+      "group_position_probs": {
+        "1st": 0.22,
+        "2nd": 0.29,
+        "3rd": 0.25,
+        "4th": 0.24
+      },
+      "advance_to_r32": 0.69,
+      "advance_to_r16": 0.29,
+      "advance_to_qf": 0.16,
+      "advance_to_sf": 0.08,
+      "advance_to_final": 0.03,
+      "champion": 0.02,
+      "expected_points_group": 4.05,
+      "expected_goals_for_group": 0.0
+    },
+    "ALG": {
+      "team_code": "ALG",
+      "group": "J",
+      "group_position_probs": {
+        "1st": 0.29,
+        "2nd": 0.22,
+        "3rd": 0.24,
+        "4th": 0.25
+      },
+      "advance_to_r32": 0.66,
+      "advance_to_r16": 0.34,
+      "advance_to_qf": 0.21,
+      "advance_to_sf": 0.09,
+      "advance_to_final": 0.05,
+      "champion": 0.03,
+      "expected_points_group": 4.22,
+      "expected_goals_for_group": 0.0
+    },
+    "AUT": {
+      "team_code": "AUT",
+      "group": "J",
+      "group_position_probs": {
+        "1st": 0.23,
+        "2nd": 0.24,
+        "3rd": 0.32,
+        "4th": 0.21
+      },
+      "advance_to_r32": 0.68,
+      "advance_to_r16": 0.25,
+      "advance_to_qf": 0.17,
+      "advance_to_sf": 0.1,
+      "advance_to_final": 0.07,
+      "champion": 0.06,
+      "expected_points_group": 4.12,
+      "expected_goals_for_group": 0.0
+    },
+    "JOR": {
+      "team_code": "JOR",
+      "group": "J",
+      "group_position_probs": {
+        "1st": 0.26,
+        "2nd": 0.25,
+        "3rd": 0.19,
+        "4th": 0.3
+      },
+      "advance_to_r32": 0.61,
+      "advance_to_r16": 0.3,
+      "advance_to_qf": 0.19,
+      "advance_to_sf": 0.1,
+      "advance_to_final": 0.03,
+      "champion": 0.02,
+      "expected_points_group": 3.82,
+      "expected_goals_for_group": 0.0
+    },
+    "POR": {
+      "team_code": "POR",
+      "group": "K",
+      "group_position_probs": {
+        "1st": 0.22,
+        "2nd": 0.23,
+        "3rd": 0.27,
+        "4th": 0.28
+      },
+      "advance_to_r32": 0.65,
+      "advance_to_r16": 0.3,
+      "advance_to_qf": 0.14,
+      "advance_to_sf": 0.1,
+      "advance_to_final": 0.06,
+      "champion": 0.02,
+      "expected_points_group": 4.05,
+      "expected_goals_for_group": 0.0
+    },
+    "COD": {
+      "team_code": "COD",
+      "group": "K",
+      "group_position_probs": {
+        "1st": 0.25,
+        "2nd": 0.26,
+        "3rd": 0.18,
+        "4th": 0.31
+      },
+      "advance_to_r32": 0.61,
+      "advance_to_r16": 0.33,
+      "advance_to_qf": 0.14,
+      "advance_to_sf": 0.09,
+      "advance_to_final": 0.07,
+      "champion": 0.03,
+      "expected_points_group": 3.93,
+      "expected_goals_for_group": 0.0
+    },
+    "UZB": {
+      "team_code": "UZB",
+      "group": "K",
+      "group_position_probs": {
+        "1st": 0.27,
+        "2nd": 0.22,
+        "3rd": 0.29,
+        "4th": 0.22
+      },
+      "advance_to_r32": 0.66,
+      "advance_to_r16": 0.35,
+      "advance_to_qf": 0.15,
+      "advance_to_sf": 0.06,
+      "advance_to_final": 0.02,
+      "champion": 0.02,
+      "expected_points_group": 4.07,
+      "expected_goals_for_group": 0.0
+    },
+    "COL": {
+      "team_code": "COL",
+      "group": "K",
+      "group_position_probs": {
+        "1st": 0.26,
+        "2nd": 0.29,
+        "3rd": 0.26,
+        "4th": 0.19
+      },
+      "advance_to_r32": 0.72,
+      "advance_to_r16": 0.37,
+      "advance_to_qf": 0.2,
+      "advance_to_sf": 0.07,
+      "advance_to_final": 0.04,
+      "champion": 0.02,
+      "expected_points_group": 4.24,
+      "expected_goals_for_group": 0.0
+    },
+    "ENG": {
+      "team_code": "ENG",
+      "group": "L",
+      "group_position_probs": {
+        "1st": 0.39,
+        "2nd": 0.14,
+        "3rd": 0.2,
+        "4th": 0.27
+      },
+      "advance_to_r32": 0.69,
+      "advance_to_r16": 0.35,
+      "advance_to_qf": 0.23,
+      "advance_to_sf": 0.1,
+      "advance_to_final": 0.07,
+      "champion": 0.04,
+      "expected_points_group": 4.31,
+      "expected_goals_for_group": 0.0
+    },
+    "CRO": {
+      "team_code": "CRO",
+      "group": "L",
+      "group_position_probs": {
+        "1st": 0.24,
+        "2nd": 0.33,
+        "3rd": 0.2,
+        "4th": 0.23
+      },
+      "advance_to_r32": 0.7,
+      "advance_to_r16": 0.4,
+      "advance_to_qf": 0.19,
+      "advance_to_sf": 0.07,
+      "advance_to_final": 0.03,
+      "champion": 0.01,
+      "expected_points_group": 4.28,
+      "expected_goals_for_group": 0.0
+    },
+    "GHA": {
+      "team_code": "GHA",
+      "group": "L",
+      "group_position_probs": {
+        "1st": 0.14,
+        "2nd": 0.29,
+        "3rd": 0.28,
+        "4th": 0.29
+      },
+      "advance_to_r32": 0.63,
+      "advance_to_r16": 0.36,
+      "advance_to_qf": 0.18,
+      "advance_to_sf": 0.09,
+      "advance_to_final": 0.04,
+      "champion": 0.04,
+      "expected_points_group": 3.73,
+      "expected_goals_for_group": 0.0
+    },
+    "PAN": {
+      "team_code": "PAN",
+      "group": "L",
+      "group_position_probs": {
+        "1st": 0.23,
+        "2nd": 0.24,
+        "3rd": 0.32,
+        "4th": 0.21
+      },
+      "advance_to_r32": 0.66,
+      "advance_to_r16": 0.33,
+      "advance_to_qf": 0.11,
+      "advance_to_sf": 0.06,
+      "advance_to_final": 0.03,
+      "champion": 0.02,
+      "expected_points_group": 4.03,
+      "expected_goals_for_group": 0.0
+    }
+  },
+  "most_likely_final": [
+    {
+      "matchup": "England vs United States",
+      "probability": 0.03
+    },
+    {
+      "matchup": "Ghana vs Iran",
+      "probability": 0.02
+    },
+    {
+      "matchup": "Austria vs Portugal",
+      "probability": 0.02
+    },
+    {
+      "matchup": "Spain vs Haiti",
+      "probability": 0.01
+    },
+    {
+      "matchup": "Norway vs Uzbekistan",
+      "probability": 0.01
+    },
+    {
+      "matchup": "Iraq vs Panama",
+      "probability": 0.01
+    },
+    {
+      "matchup": "Croatia vs Curacao",
+      "probability": 0.01
+    },
+    {
+      "matchup": "Ivory Coast vs Mexico",
+      "probability": 0.01
+    },
+    {
+      "matchup": "England vs Tunisia",
+      "probability": 0.01
+    },
+    {
+      "matchup": "Saudi Arabia vs Switzerland",
+      "probability": 0.01
+    }
+  ]
+}
