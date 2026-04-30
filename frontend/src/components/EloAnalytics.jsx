@@ -93,6 +93,170 @@ export default function EloAnalytics({ resultData, teamsList = [] }) {
         </div>
       </div>
 
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <div className="glass-card" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)', padding: '2rem' }}>
+          <h3 style={{ marginBottom: '1rem' }}>Histograma de Eliminación</h3>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Probabilidad exacta de ser eliminado en esa fase específica.</p>
+          
+          <div style={{ position: 'relative', width: '100%', aspectRatio: '3', overflow: 'visible' }}>
+            <svg viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+              {(() => {
+                const stages = ["Grupos", "R32", "R16", "QF", "SF", "Final", "Champ"];
+                const numTeams = selectedData.length;
+                const barWidth = Math.max(10, Math.min(40, (VIEW_W - 100) / (stages.length * numTeams * 1.5)));
+                const groupSpacing = (VIEW_W - 100) / stages.length;
+                
+                // Find max prob to scale Y axis dynamically
+                let maxProb = 0.2; // minimum scale
+                selectedData.forEach(d => {
+                  const tInfo = resultData.teams[d.code];
+                  if (!tInfo) return;
+                  const elimProbs = [
+                    1 - tInfo.advance_to_r32,
+                    tInfo.advance_to_r32 - tInfo.advance_to_r16,
+                    tInfo.advance_to_r16 - tInfo.advance_to_qf,
+                    tInfo.advance_to_qf - tInfo.advance_to_sf,
+                    tInfo.advance_to_sf - tInfo.advance_to_final,
+                    tInfo.advance_to_final - tInfo.champion,
+                    tInfo.champion
+                  ];
+                  maxProb = Math.max(maxProb, ...elimProbs);
+                });
+                
+                // Round maxProb to nearest 10%
+                maxProb = Math.ceil(maxProb * 10) / 10;
+                
+                const getX = (stageIdx, teamIdx) => 50 + stageIdx * groupSpacing + (teamIdx - numTeams/2 + 0.5) * barWidth * 1.2;
+                const getY = (val) => VIEW_H - 50 - (val / maxProb) * (VIEW_H - 100);
+
+                return (
+                  <>
+                    {/* Grid lines */}
+                    {[0, 0.25, 0.5, 0.75, 1].map(frac => {
+                      const v = frac * maxProb;
+                      return (
+                        <g key={`grid-b-${v}`}>
+                          <line x1="50" y1={getY(v)} x2={VIEW_W} y2={getY(v)} stroke="rgba(255,255,255,0.1)" strokeDasharray="4,4" />
+                          <text x="40" y={getY(v) + 4} fill="var(--text-muted)" fontSize="12" textAnchor="end">{(v * 100).toFixed(0)}%</text>
+                        </g>
+                      )
+                    })}
+                    
+                    {selectedData.map((d, tIdx) => {
+                      const tInfo = resultData.teams[d.code];
+                      if (!tInfo) return null;
+                      const elimProbs = [
+                        Math.max(0, 1 - tInfo.advance_to_r32),
+                        Math.max(0, tInfo.advance_to_r32 - tInfo.advance_to_r16),
+                        Math.max(0, tInfo.advance_to_r16 - tInfo.advance_to_qf),
+                        Math.max(0, tInfo.advance_to_qf - tInfo.advance_to_sf),
+                        Math.max(0, tInfo.advance_to_sf - tInfo.advance_to_final),
+                        Math.max(0, tInfo.advance_to_final - tInfo.champion),
+                        Math.max(0, tInfo.champion)
+                      ];
+                      const color = colors[tIdx % colors.length];
+
+                      return (
+                        <g key={`elim-${d.code}`}>
+                          {elimProbs.map((val, stageIdx) => {
+                            const barH = (val / maxProb) * (VIEW_H - 100);
+                            const x = getX(stageIdx, tIdx);
+                            const y = getY(val);
+                            return (
+                              <g key={`elim-${d.code}-${stageIdx}`}>
+                                <rect x={x - barWidth/2} y={y} width={barWidth} height={barH} fill={color} opacity="0.8" rx="2" />
+                                {val > 0.05 && (
+                                  <text x={x} y={y - 5} fill={color} fontSize="14" textAnchor="middle" fontWeight="bold">
+                                    {(val * 100).toFixed(1)}%
+                                  </text>
+                                )}
+                              </g>
+                            )
+                          })}
+                        </g>
+                      );
+                    })}
+                  </>
+                );
+              })()}
+            </svg>
+            <div style={{ position: 'absolute', bottom: '-20px', left: 0, width: '100%' }}>
+              {["Grupos", "R32", "R16", "QF", "SF", "Final", "Champ"].map((lbl, i) => {
+                const xPercent = (((50 + i * ((VIEW_W - 100) / 7))) / VIEW_W) * 100;
+                return (
+                  <span key={`elim-lbl-${lbl}`} style={{ position: 'absolute', left: `${xPercent}%`, transform: 'translateX(-50%)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    {lbl}
+                  </span>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+        <div className="glass-card" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)', padding: '2rem' }}>
+          <h3 style={{ marginBottom: '1rem' }}>Curva de Supervivencia</h3>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Probabilidad acumulada de avanzar a cada fase.</p>
+          
+          <div style={{ position: 'relative', width: '100%', aspectRatio: '3', overflow: 'visible' }}>
+            <svg viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+              {(() => {
+                const stages = ["R32", "R16", "QF", "SF", "Final", "Champ"];
+                const getX = (idx) => 50 + (idx / (stages.length - 1)) * (VIEW_W - 100);
+                const getY = (val) => VIEW_H - 50 - val * (VIEW_H - 100);
+                
+                return (
+                  <>
+                    {/* Grid lines */}
+                    {[0, 0.25, 0.5, 0.75, 1].map(v => (
+                      <g key={`grid-a-${v}`}>
+                        <line x1="50" y1={getY(v)} x2={VIEW_W - 50} y2={getY(v)} stroke="rgba(255,255,255,0.1)" strokeDasharray="4,4" />
+                        <text x="40" y={getY(v) + 4} fill="var(--text-muted)" fontSize="12" textAnchor="end">{v * 100}%</text>
+                      </g>
+                    ))}
+                    
+                    {selectedData.map((d, tIdx) => {
+                      const tInfo = resultData.teams[d.code];
+                      if (!tInfo) return null;
+                      const probs = [
+                        tInfo.advance_to_r32, tInfo.advance_to_r16, tInfo.advance_to_qf,
+                        tInfo.advance_to_sf, tInfo.advance_to_final, tInfo.champion
+                      ];
+                      const color = colors[tIdx % colors.length];
+
+                      let linePoints = "";
+                      for (let i = 0; i < stages.length; i++) linePoints += `${getX(i)},${getY(probs[i])} `;
+
+                      return (
+                        <g key={`surv-${d.code}`}>
+                          <polyline points={linePoints} fill="none" stroke={color} strokeWidth="3" />
+                          {probs.map((v, i) => (
+                            <g key={i}>
+                              <circle cx={getX(i)} cy={getY(v)} r="5" fill="#fff" stroke={color} strokeWidth="2" />
+                              <text x={getX(i)} y={getY(v) - 15} fill={color} fontSize="18" textAnchor="middle" fontWeight="bold">
+                                {(v * 100).toFixed(1)}%
+                              </text>
+                            </g>
+                          ))}
+                        </g>
+                      );
+                    })}
+                  </>
+                );
+              })()}
+            </svg>
+            <div style={{ position: 'absolute', bottom: '-20px', left: 0, width: '100%' }}>
+              {["R32", "R16", "QF", "SF", "Final", "Champ"].map((lbl, i) => {
+                const xPercent = (((50 + (i / 5) * (VIEW_W - 100))) / VIEW_W) * 100;
+                return (
+                  <span key={`surv-lbl-${lbl}`} style={{ position: 'absolute', left: `${xPercent}%`, transform: 'translateX(-50%)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    {lbl}
+                  </span>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+
       <div className="glass-card" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)', padding: '2rem' }}>
         <h3 style={{ marginBottom: '1rem' }}>Sombreado Probabilístico de Monte-Carlo (Time-Series)</h3>
 
@@ -173,170 +337,6 @@ export default function EloAnalytics({ resultData, teamsList = [] }) {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-        <div className="glass-card" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)', padding: '2rem' }}>
-          <h3 style={{ marginBottom: '1rem' }}>Curva de Supervivencia (Opción A)</h3>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Probabilidad acumulada de avanzar a cada fase.</p>
-          
-          <div style={{ position: 'relative', width: '100%', aspectRatio: '2', overflow: 'visible' }}>
-            <svg viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-              {(() => {
-                const stages = ["R32", "R16", "QF", "SF", "Final", "Champ"];
-                const getX = (idx) => 50 + (idx / (stages.length - 1)) * (VIEW_W - 100);
-                const getY = (val) => VIEW_H - 50 - val * (VIEW_H - 100);
-                
-                return (
-                  <>
-                    {/* Grid lines */}
-                    {[0, 0.25, 0.5, 0.75, 1].map(v => (
-                      <g key={`grid-a-${v}`}>
-                        <line x1="50" y1={getY(v)} x2={VIEW_W - 50} y2={getY(v)} stroke="rgba(255,255,255,0.1)" strokeDasharray="4,4" />
-                        <text x="40" y={getY(v) + 4} fill="var(--text-muted)" fontSize="12" textAnchor="end">{v * 100}%</text>
-                      </g>
-                    ))}
-                    
-                    {selectedData.map((d, tIdx) => {
-                      const tInfo = resultData.teams[d.code];
-                      if (!tInfo) return null;
-                      const probs = [
-                        tInfo.advance_to_r32, tInfo.advance_to_r16, tInfo.advance_to_qf,
-                        tInfo.advance_to_sf, tInfo.advance_to_final, tInfo.champion
-                      ];
-                      const color = colors[tIdx % colors.length];
-
-                      let linePoints = "";
-                      for (let i = 0; i < stages.length; i++) linePoints += `${getX(i)},${getY(probs[i])} `;
-
-                      return (
-                        <g key={`surv-${d.code}`}>
-                          <polyline points={linePoints} fill="none" stroke={color} strokeWidth="3" />
-                          {probs.map((v, i) => (
-                            <g key={i}>
-                              <circle cx={getX(i)} cy={getY(v)} r="5" fill="#fff" stroke={color} strokeWidth="2" />
-                              <text x={getX(i)} y={getY(v) - 15} fill={color} fontSize="14" textAnchor="middle" fontWeight="bold">
-                                {(v * 100).toFixed(1)}%
-                              </text>
-                            </g>
-                          ))}
-                        </g>
-                      );
-                    })}
-                  </>
-                );
-              })()}
-            </svg>
-            <div style={{ position: 'absolute', bottom: '-20px', left: 0, width: '100%' }}>
-              {["R32", "R16", "QF", "SF", "Final", "Champ"].map((lbl, i) => {
-                const xPercent = (((50 + (i / 5) * (VIEW_W - 100))) / VIEW_W) * 100;
-                return (
-                  <span key={`surv-lbl-${lbl}`} style={{ position: 'absolute', left: `${xPercent}%`, transform: 'translateX(-50%)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                    {lbl}
-                  </span>
-                )
-              })}
-            </div>
-          </div>
-        </div>
-
-        <div className="glass-card" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)', padding: '2rem' }}>
-          <h3 style={{ marginBottom: '1rem' }}>Histograma de Eliminación (Opción B)</h3>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Probabilidad exacta de ser eliminado en esa fase específica.</p>
-          
-          <div style={{ position: 'relative', width: '100%', aspectRatio: '2', overflow: 'visible' }}>
-            <svg viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-              {(() => {
-                const stages = ["Grupos", "R32", "R16", "QF", "SF", "Final", "Champ"];
-                const numTeams = selectedData.length;
-                const barWidth = Math.max(10, Math.min(40, (VIEW_W - 100) / (stages.length * numTeams * 1.5)));
-                const groupSpacing = (VIEW_W - 100) / stages.length;
-                
-                // Find max prob to scale Y axis dynamically
-                let maxProb = 0.2; // minimum scale
-                selectedData.forEach(d => {
-                  const tInfo = resultData.teams[d.code];
-                  if (!tInfo) return;
-                  const elimProbs = [
-                    1 - tInfo.advance_to_r32,
-                    tInfo.advance_to_r32 - tInfo.advance_to_r16,
-                    tInfo.advance_to_r16 - tInfo.advance_to_qf,
-                    tInfo.advance_to_qf - tInfo.advance_to_sf,
-                    tInfo.advance_to_sf - tInfo.advance_to_final,
-                    tInfo.advance_to_final - tInfo.champion,
-                    tInfo.champion
-                  ];
-                  maxProb = Math.max(maxProb, ...elimProbs);
-                });
-                
-                // Round maxProb to nearest 10%
-                maxProb = Math.ceil(maxProb * 10) / 10;
-                
-                const getX = (stageIdx, teamIdx) => 50 + stageIdx * groupSpacing + (teamIdx - numTeams/2 + 0.5) * barWidth * 1.2;
-                const getY = (val) => VIEW_H - 50 - (val / maxProb) * (VIEW_H - 100);
-
-                return (
-                  <>
-                    {/* Grid lines */}
-                    {[0, 0.25, 0.5, 0.75, 1].map(frac => {
-                      const v = frac * maxProb;
-                      return (
-                        <g key={`grid-b-${v}`}>
-                          <line x1="50" y1={getY(v)} x2={VIEW_W} y2={getY(v)} stroke="rgba(255,255,255,0.1)" strokeDasharray="4,4" />
-                          <text x="40" y={getY(v) + 4} fill="var(--text-muted)" fontSize="12" textAnchor="end">{(v * 100).toFixed(0)}%</text>
-                        </g>
-                      )
-                    })}
-                    
-                    {selectedData.map((d, tIdx) => {
-                      const tInfo = resultData.teams[d.code];
-                      if (!tInfo) return null;
-                      const elimProbs = [
-                        Math.max(0, 1 - tInfo.advance_to_r32),
-                        Math.max(0, tInfo.advance_to_r32 - tInfo.advance_to_r16),
-                        Math.max(0, tInfo.advance_to_r16 - tInfo.advance_to_qf),
-                        Math.max(0, tInfo.advance_to_qf - tInfo.advance_to_sf),
-                        Math.max(0, tInfo.advance_to_sf - tInfo.advance_to_final),
-                        Math.max(0, tInfo.advance_to_final - tInfo.champion),
-                        Math.max(0, tInfo.champion)
-                      ];
-                      const color = colors[tIdx % colors.length];
-
-                      return (
-                        <g key={`elim-${d.code}`}>
-                          {elimProbs.map((val, stageIdx) => {
-                            const barH = (val / maxProb) * (VIEW_H - 100);
-                            const x = getX(stageIdx, tIdx);
-                            const y = getY(val);
-                            return (
-                              <g key={`elim-${d.code}-${stageIdx}`}>
-                                <rect x={x - barWidth/2} y={y} width={barWidth} height={barH} fill={color} opacity="0.8" rx="2" />
-                                {val > 0.05 && (
-                                  <text x={x} y={y - 5} fill={color} fontSize="10" textAnchor="middle" fontWeight="bold">
-                                    {(val * 100).toFixed(1)}%
-                                  </text>
-                                )}
-                              </g>
-                            )
-                          })}
-                        </g>
-                      );
-                    })}
-                  </>
-                );
-              })()}
-            </svg>
-            <div style={{ position: 'absolute', bottom: '-20px', left: 0, width: '100%' }}>
-              {["Grupos", "R32", "R16", "QF", "SF", "Final", "Champ"].map((lbl, i) => {
-                const xPercent = (((50 + i * ((VIEW_W - 100) / 7))) / VIEW_W) * 100;
-                return (
-                  <span key={`elim-lbl-${lbl}`} style={{ position: 'absolute', left: `${xPercent}%`, transform: 'translateX(-50%)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                    {lbl}
-                  </span>
-                )
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
 
       <div className="glass-card" style={{ marginTop: '2rem' }}>
         <h3 style={{ marginBottom: '1rem' }}>Current Global ELOs</h3>

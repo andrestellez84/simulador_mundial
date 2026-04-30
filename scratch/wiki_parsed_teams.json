@@ -1,0 +1,626 @@
+[
+  {
+    "date": "June\u00a011,\u00a02026\u00a0(2026-06-11)",
+    "time": "1:00\u00a0p.m. UTC\u22126",
+    "home": "Mexico",
+    "away": "South Africa"
+  },
+  {
+    "date": "June\u00a011,\u00a02026\u00a0(2026-06-11)",
+    "time": "8:00\u00a0p.m. UTC\u22126",
+    "home": "South Korea",
+    "away": "Czech Republic"
+  },
+  {
+    "date": "June\u00a018,\u00a02026\u00a0(2026-06-18)",
+    "time": "12:00\u00a0p.m. UTC\u22124",
+    "home": "Czech Republic",
+    "away": "South Africa"
+  },
+  {
+    "date": "June\u00a018,\u00a02026\u00a0(2026-06-18)",
+    "time": "7:00\u00a0p.m. UTC\u22126",
+    "home": "Mexico",
+    "away": "South Korea"
+  },
+  {
+    "date": "June\u00a024,\u00a02026\u00a0(2026-06-24)",
+    "time": "7:00\u00a0p.m. UTC\u22126",
+    "home": "Czech Republic",
+    "away": "Mexico"
+  },
+  {
+    "date": "June\u00a024,\u00a02026\u00a0(2026-06-24)",
+    "time": "7:00\u00a0p.m. UTC\u22126",
+    "home": "South Africa",
+    "away": "South Korea"
+  },
+  {
+    "date": "June\u00a012,\u00a02026\u00a0(2026-06-12)",
+    "time": "3:00\u00a0p.m. UTC\u22124",
+    "home": "Canada",
+    "away": "Bosnia and Herzegovina"
+  },
+  {
+    "date": "June\u00a013,\u00a02026\u00a0(2026-06-13)",
+    "time": "12:00\u00a0p.m. UTC\u22127",
+    "home": "Qatar",
+    "away": "Switzerland"
+  },
+  {
+    "date": "June\u00a018,\u00a02026\u00a0(2026-06-18)",
+    "time": "12:00\u00a0p.m. UTC\u22127",
+    "home": "Switzerland",
+    "away": "Bosnia and Herzegovina"
+  },
+  {
+    "date": "June\u00a018,\u00a02026\u00a0(2026-06-18)",
+    "time": "3:00\u00a0p.m. UTC\u22127",
+    "home": "Canada",
+    "away": "Qatar"
+  },
+  {
+    "date": "June\u00a024,\u00a02026\u00a0(2026-06-24)",
+    "time": "12:00\u00a0p.m. UTC\u22127",
+    "home": "Switzerland",
+    "away": "Canada"
+  },
+  {
+    "date": "June\u00a024,\u00a02026\u00a0(2026-06-24)",
+    "time": "12:00\u00a0p.m. UTC\u22127",
+    "home": "Bosnia and Herzegovina",
+    "away": "Qatar"
+  },
+  {
+    "date": "June\u00a013,\u00a02026\u00a0(2026-06-13)",
+    "time": "6:00\u00a0p.m. UTC\u22124",
+    "home": "Brazil",
+    "away": "Morocco"
+  },
+  {
+    "date": "June\u00a013,\u00a02026\u00a0(2026-06-13)",
+    "time": "9:00\u00a0p.m. UTC\u22124",
+    "home": "Haiti",
+    "away": "Scotland"
+  },
+  {
+    "date": "June\u00a019,\u00a02026\u00a0(2026-06-19)",
+    "time": "6:00\u00a0p.m. UTC\u22124",
+    "home": "Scotland",
+    "away": "Morocco"
+  },
+  {
+    "date": "June\u00a019,\u00a02026\u00a0(2026-06-19)",
+    "time": "8:30\u00a0p.m. UTC\u22124",
+    "home": "Brazil",
+    "away": "Haiti"
+  },
+  {
+    "date": "June\u00a024,\u00a02026\u00a0(2026-06-24)",
+    "time": "6:00\u00a0p.m. UTC\u22124",
+    "home": "Scotland",
+    "away": "Brazil"
+  },
+  {
+    "date": "June\u00a024,\u00a02026\u00a0(2026-06-24)",
+    "time": "6:00\u00a0p.m. UTC\u22124",
+    "home": "Morocco",
+    "away": "Haiti"
+  },
+  {
+    "date": "June\u00a012,\u00a02026\u00a0(2026-06-12)",
+    "time": "6:00\u00a0p.m. UTC\u22127",
+    "home": "United States",
+    "away": "Paraguay"
+  },
+  {
+    "date": "June\u00a013,\u00a02026\u00a0(2026-06-13)",
+    "time": "9:00\u00a0p.m. UTC\u22127",
+    "home": "Australia",
+    "away": "Turkey"
+  },
+  {
+    "date": "June\u00a019,\u00a02026\u00a0(2026-06-19)",
+    "time": "12:00\u00a0p.m. UTC\u22127",
+    "home": "United States",
+    "away": "Australia"
+  },
+  {
+    "date": "June\u00a019,\u00a02026\u00a0(2026-06-19)",
+    "time": "8:00\u00a0p.m. UTC\u22127",
+    "home": "Turkey",
+    "away": "Paraguay"
+  },
+  {
+    "date": "June\u00a025,\u00a02026\u00a0(2026-06-25)",
+    "time": "7:00\u00a0p.m. UTC\u22127",
+    "home": "Turkey",
+    "away": "United States"
+  },
+  {
+    "date": "June\u00a025,\u00a02026\u00a0(2026-06-25)",
+    "time": "7:00\u00a0p.m. UTC\u22127",
+    "home": "Paraguay",
+    "away": "Australia"
+  },
+  {
+    "date": "June\u00a014,\u00a02026\u00a0(2026-06-14)",
+    "time": "12:00\u00a0p.m. UTC\u22125",
+    "home": "Germany",
+    "away": "Cura\u00e7ao"
+  },
+  {
+    "date": "June\u00a014,\u00a02026\u00a0(2026-06-14)",
+    "time": "7:00\u00a0p.m. UTC\u22124",
+    "home": "Ivory Coast",
+    "away": "Ecuador"
+  },
+  {
+    "date": "June\u00a020,\u00a02026\u00a0(2026-06-20)",
+    "time": "4:00\u00a0p.m. UTC\u22124",
+    "home": "Germany",
+    "away": "Ivory Coast"
+  },
+  {
+    "date": "June\u00a020,\u00a02026\u00a0(2026-06-20)",
+    "time": "7:00\u00a0p.m. UTC\u22125",
+    "home": "Ecuador",
+    "away": "Cura\u00e7ao"
+  },
+  {
+    "date": "June\u00a025,\u00a02026\u00a0(2026-06-25)",
+    "time": "4:00\u00a0p.m. UTC\u22124",
+    "home": "Cura\u00e7ao",
+    "away": "Ivory Coast"
+  },
+  {
+    "date": "June\u00a025,\u00a02026\u00a0(2026-06-25)",
+    "time": "4:00\u00a0p.m. UTC\u22124",
+    "home": "Ecuador",
+    "away": "Germany"
+  },
+  {
+    "date": "June\u00a014,\u00a02026\u00a0(2026-06-14)",
+    "time": "3:00\u00a0p.m. UTC\u22125",
+    "home": "Netherlands",
+    "away": "Japan"
+  },
+  {
+    "date": "June\u00a014,\u00a02026\u00a0(2026-06-14)",
+    "time": "8:00\u00a0p.m. UTC\u22126",
+    "home": "Sweden",
+    "away": "Tunisia"
+  },
+  {
+    "date": "June\u00a020,\u00a02026\u00a0(2026-06-20)",
+    "time": "12:00\u00a0p.m. UTC\u22125",
+    "home": "Netherlands",
+    "away": "Sweden"
+  },
+  {
+    "date": "June\u00a020,\u00a02026\u00a0(2026-06-20)",
+    "time": "10:00\u00a0p.m. UTC\u22126",
+    "home": "Tunisia",
+    "away": "Japan"
+  },
+  {
+    "date": "June\u00a025,\u00a02026\u00a0(2026-06-25)",
+    "time": "6:00\u00a0p.m. UTC\u22125",
+    "home": "Japan",
+    "away": "Sweden"
+  },
+  {
+    "date": "June\u00a025,\u00a02026\u00a0(2026-06-25)",
+    "time": "6:00\u00a0p.m. UTC\u22125",
+    "home": "Tunisia",
+    "away": "Netherlands"
+  },
+  {
+    "date": "June\u00a015,\u00a02026\u00a0(2026-06-15)",
+    "time": "12:00\u00a0p.m. UTC\u22127",
+    "home": "Belgium",
+    "away": "Egypt"
+  },
+  {
+    "date": "June\u00a015,\u00a02026\u00a0(2026-06-15)",
+    "time": "6:00\u00a0p.m. UTC\u22127",
+    "home": "Iran",
+    "away": "New Zealand"
+  },
+  {
+    "date": "June\u00a021,\u00a02026\u00a0(2026-06-21)",
+    "time": "12:00\u00a0p.m. UTC\u22127",
+    "home": "Belgium",
+    "away": "Iran"
+  },
+  {
+    "date": "June\u00a021,\u00a02026\u00a0(2026-06-21)",
+    "time": "6:00\u00a0p.m. UTC\u22127",
+    "home": "New Zealand",
+    "away": "Egypt"
+  },
+  {
+    "date": "June\u00a026,\u00a02026\u00a0(2026-06-26)",
+    "time": "8:00\u00a0p.m. UTC\u22127",
+    "home": "Egypt",
+    "away": "Iran"
+  },
+  {
+    "date": "June\u00a026,\u00a02026\u00a0(2026-06-26)",
+    "time": "8:00\u00a0p.m. UTC\u22127",
+    "home": "New Zealand",
+    "away": "Belgium"
+  },
+  {
+    "date": "June\u00a015,\u00a02026\u00a0(2026-06-15)",
+    "time": "12:00\u00a0p.m. UTC\u22124",
+    "home": "Spain",
+    "away": "Cape Verde"
+  },
+  {
+    "date": "June\u00a015,\u00a02026\u00a0(2026-06-15)",
+    "time": "6:00\u00a0p.m. UTC\u22124",
+    "home": "Saudi Arabia",
+    "away": "Uruguay"
+  },
+  {
+    "date": "June\u00a021,\u00a02026\u00a0(2026-06-21)",
+    "time": "12:00\u00a0p.m. UTC\u22124",
+    "home": "Spain",
+    "away": "Saudi Arabia"
+  },
+  {
+    "date": "June\u00a021,\u00a02026\u00a0(2026-06-21)",
+    "time": "6:00\u00a0p.m. UTC\u22124",
+    "home": "Uruguay",
+    "away": "Cape Verde"
+  },
+  {
+    "date": "June\u00a026,\u00a02026\u00a0(2026-06-26)",
+    "time": "7:00\u00a0p.m. UTC\u22125",
+    "home": "Cape Verde",
+    "away": "Saudi Arabia"
+  },
+  {
+    "date": "June\u00a026,\u00a02026\u00a0(2026-06-26)",
+    "time": "6:00\u00a0p.m. UTC\u22126",
+    "home": "Uruguay",
+    "away": "Spain"
+  },
+  {
+    "date": "June\u00a016,\u00a02026\u00a0(2026-06-16)",
+    "time": "3:00\u00a0p.m. UTC\u22124",
+    "home": "France",
+    "away": "Senegal"
+  },
+  {
+    "date": "June\u00a016,\u00a02026\u00a0(2026-06-16)",
+    "time": "6:00\u00a0p.m. UTC\u22124",
+    "home": "Iraq",
+    "away": "Norway"
+  },
+  {
+    "date": "June\u00a022,\u00a02026\u00a0(2026-06-22)",
+    "time": "5:00\u00a0p.m. UTC\u22124",
+    "home": "France",
+    "away": "Iraq"
+  },
+  {
+    "date": "June\u00a022,\u00a02026\u00a0(2026-06-22)",
+    "time": "8:00\u00a0p.m. UTC\u22124",
+    "home": "Norway",
+    "away": "Senegal"
+  },
+  {
+    "date": "June\u00a026,\u00a02026\u00a0(2026-06-26)",
+    "time": "3:00\u00a0p.m. UTC\u22124",
+    "home": "Norway",
+    "away": "France"
+  },
+  {
+    "date": "June\u00a026,\u00a02026\u00a0(2026-06-26)",
+    "time": "3:00\u00a0p.m. UTC\u22124",
+    "home": "Senegal",
+    "away": "Iraq"
+  },
+  {
+    "date": "June\u00a016,\u00a02026\u00a0(2026-06-16)",
+    "time": "8:00\u00a0p.m. UTC\u22125",
+    "home": "Argentina",
+    "away": "Algeria"
+  },
+  {
+    "date": "June\u00a016,\u00a02026\u00a0(2026-06-16)",
+    "time": "9:00\u00a0p.m. UTC\u22127",
+    "home": "Austria",
+    "away": "Jordan"
+  },
+  {
+    "date": "June\u00a022,\u00a02026\u00a0(2026-06-22)",
+    "time": "12:00\u00a0p.m. UTC\u22125",
+    "home": "Argentina",
+    "away": "Austria"
+  },
+  {
+    "date": "June\u00a022,\u00a02026\u00a0(2026-06-22)",
+    "time": "8:00\u00a0p.m. UTC\u22127",
+    "home": "Jordan",
+    "away": "Algeria"
+  },
+  {
+    "date": "June\u00a027,\u00a02026\u00a0(2026-06-27)",
+    "time": "9:00\u00a0p.m. UTC\u22125",
+    "home": "Algeria",
+    "away": "Austria"
+  },
+  {
+    "date": "June\u00a027,\u00a02026\u00a0(2026-06-27)",
+    "time": "9:00\u00a0p.m. UTC\u22125",
+    "home": "Jordan",
+    "away": "Argentina"
+  },
+  {
+    "date": "June\u00a017,\u00a02026\u00a0(2026-06-17)",
+    "time": "12:00\u00a0p.m. UTC\u22125",
+    "home": "Portugal",
+    "away": "DR Congo"
+  },
+  {
+    "date": "June\u00a017,\u00a02026\u00a0(2026-06-17)",
+    "time": "8:00\u00a0p.m. UTC\u22126",
+    "home": "Uzbekistan",
+    "away": "Colombia"
+  },
+  {
+    "date": "June\u00a023,\u00a02026\u00a0(2026-06-23)",
+    "time": "12:00\u00a0p.m. UTC\u22125",
+    "home": "Portugal",
+    "away": "Uzbekistan"
+  },
+  {
+    "date": "June\u00a023,\u00a02026\u00a0(2026-06-23)",
+    "time": "8:00\u00a0p.m. UTC\u22126",
+    "home": "Colombia",
+    "away": "DR Congo"
+  },
+  {
+    "date": "June\u00a027,\u00a02026\u00a0(2026-06-27)",
+    "time": "7:30\u00a0p.m. UTC\u22124",
+    "home": "Colombia",
+    "away": "Portugal"
+  },
+  {
+    "date": "June\u00a027,\u00a02026\u00a0(2026-06-27)",
+    "time": "7:30\u00a0p.m. UTC\u22124",
+    "home": "DR Congo",
+    "away": "Uzbekistan"
+  },
+  {
+    "date": "June\u00a017,\u00a02026\u00a0(2026-06-17)",
+    "time": "3:00\u00a0p.m. UTC\u22125",
+    "home": "England",
+    "away": "Croatia"
+  },
+  {
+    "date": "June\u00a017,\u00a02026\u00a0(2026-06-17)",
+    "time": "7:00\u00a0p.m. UTC\u22124",
+    "home": "Ghana",
+    "away": "Panama"
+  },
+  {
+    "date": "June\u00a023,\u00a02026\u00a0(2026-06-23)",
+    "time": "4:00\u00a0p.m. UTC\u22124",
+    "home": "England",
+    "away": "Ghana"
+  },
+  {
+    "date": "June\u00a023,\u00a02026\u00a0(2026-06-23)",
+    "time": "7:00\u00a0p.m. UTC\u22124",
+    "home": "Panama",
+    "away": "Croatia"
+  },
+  {
+    "date": "June\u00a027,\u00a02026\u00a0(2026-06-27)",
+    "time": "5:00\u00a0p.m. UTC\u22124",
+    "home": "Panama",
+    "away": "England"
+  },
+  {
+    "date": "June\u00a027,\u00a02026\u00a0(2026-06-27)",
+    "time": "5:00\u00a0p.m. UTC\u22124",
+    "home": "Croatia",
+    "away": "Ghana"
+  },
+  {
+    "date": "June\u00a028,\u00a02026\u00a0(2026-06-28)",
+    "time": "12:00\u00a0p.m. UTC\u22127",
+    "home": "Runner-up Group A",
+    "away": "Runner-up Group B"
+  },
+  {
+    "date": "June\u00a029,\u00a02026\u00a0(2026-06-29)",
+    "time": "12:00\u00a0p.m. UTC\u22125",
+    "home": "Winner Group C",
+    "away": "Runner-up Group F"
+  },
+  {
+    "date": "June\u00a029,\u00a02026\u00a0(2026-06-29)",
+    "time": "4:30\u00a0p.m. UTC\u22124",
+    "home": "Winner Group E",
+    "away": "3rd Group A/B/C/D/F"
+  },
+  {
+    "date": "June\u00a029,\u00a02026\u00a0(2026-06-29)",
+    "time": "7:00\u00a0p.m. UTC\u22126",
+    "home": "Winner Group F",
+    "away": "Runner-up Group C"
+  },
+  {
+    "date": "June\u00a030,\u00a02026\u00a0(2026-06-30)",
+    "time": "12:00\u00a0p.m. UTC\u22125",
+    "home": "Runner-up Group E",
+    "away": "Runner-up Group I"
+  },
+  {
+    "date": "June\u00a030,\u00a02026\u00a0(2026-06-30)",
+    "time": "5:00\u00a0p.m. UTC\u22124",
+    "home": "Winner Group I",
+    "away": "3rd Group C/D/F/G/H"
+  },
+  {
+    "date": "June\u00a030,\u00a02026\u00a0(2026-06-30)",
+    "time": "7:00\u00a0p.m. UTC\u22126",
+    "home": "Winner Group A",
+    "away": "3rd Group C/E/F/H/I"
+  },
+  {
+    "date": "July\u00a01,\u00a02026\u00a0(2026-07-01)",
+    "time": "12:00\u00a0p.m. UTC\u22124",
+    "home": "Winner Group L",
+    "away": "3rd Group E/H/I/J/K"
+  },
+  {
+    "date": "July\u00a01,\u00a02026\u00a0(2026-07-01)",
+    "time": "1:00\u00a0p.m. UTC\u22127",
+    "home": "Winner Group G",
+    "away": "3rd Group A/E/H/I/J"
+  },
+  {
+    "date": "July\u00a01,\u00a02026\u00a0(2026-07-01)",
+    "time": "5:00\u00a0p.m. UTC\u22127",
+    "home": "Winner Group D",
+    "away": "3rd Group B/E/F/I/J"
+  },
+  {
+    "date": "July\u00a02,\u00a02026\u00a0(2026-07-02)",
+    "time": "12:00\u00a0p.m. UTC\u22127",
+    "home": "Winner Group H",
+    "away": "Runner-up Group J"
+  },
+  {
+    "date": "July\u00a02,\u00a02026\u00a0(2026-07-02)",
+    "time": "7:00\u00a0p.m. UTC\u22124",
+    "home": "Runner-up Group K",
+    "away": "Runner-up Group L"
+  },
+  {
+    "date": "July\u00a02,\u00a02026\u00a0(2026-07-02)",
+    "time": "8:00\u00a0p.m. UTC\u22127",
+    "home": "Winner Group B",
+    "away": "3rd Group E/F/G/I/J"
+  },
+  {
+    "date": "July\u00a03,\u00a02026\u00a0(2026-07-03)",
+    "time": "1:00\u00a0p.m. UTC\u22125",
+    "home": "Runner-up Group D",
+    "away": "Runner-up Group G"
+  },
+  {
+    "date": "July\u00a03,\u00a02026\u00a0(2026-07-03)",
+    "time": "6:00\u00a0p.m. UTC\u22124",
+    "home": "Winner Group J",
+    "away": "Runner-up Group H"
+  },
+  {
+    "date": "July\u00a03,\u00a02026\u00a0(2026-07-03)",
+    "time": "8:30\u00a0p.m. UTC\u22125",
+    "home": "Winner Group K",
+    "away": "3rd Group D/E/I/J/L"
+  },
+  {
+    "date": "July\u00a04,\u00a02026\u00a0(2026-07-04)",
+    "time": "12:00\u00a0p.m. UTC\u22125",
+    "home": "Winner Match 73",
+    "away": "Winner Match 75"
+  },
+  {
+    "date": "July\u00a04,\u00a02026\u00a0(2026-07-04)",
+    "time": "5:00\u00a0p.m. UTC\u22124",
+    "home": "Winner Match 74",
+    "away": "Winner Match 77"
+  },
+  {
+    "date": "July\u00a05,\u00a02026\u00a0(2026-07-05)",
+    "time": "4:00\u00a0p.m. UTC\u22124",
+    "home": "Winner Match 76",
+    "away": "Winner Match 78"
+  },
+  {
+    "date": "July\u00a05,\u00a02026\u00a0(2026-07-05)",
+    "time": "6:00\u00a0p.m. UTC\u22126",
+    "home": "Winner Match 79",
+    "away": "Winner Match 80"
+  },
+  {
+    "date": "July\u00a06,\u00a02026\u00a0(2026-07-06)",
+    "time": "2:00\u00a0p.m. UTC\u22125",
+    "home": "Winner Match 83",
+    "away": "Winner Match 84"
+  },
+  {
+    "date": "July\u00a06,\u00a02026\u00a0(2026-07-06)",
+    "time": "5:00\u00a0p.m. UTC\u22127",
+    "home": "Winner Match 81",
+    "away": "Winner Match 82"
+  },
+  {
+    "date": "July\u00a07,\u00a02026\u00a0(2026-07-07)",
+    "time": "12:00\u00a0p.m. UTC\u22124",
+    "home": "Winner Match 86",
+    "away": "Winner Match 88"
+  },
+  {
+    "date": "July\u00a07,\u00a02026\u00a0(2026-07-07)",
+    "time": "1:00\u00a0p.m. UTC\u22127",
+    "home": "Winner Match 85",
+    "away": "Winner Match 87"
+  },
+  {
+    "date": "July\u00a09,\u00a02026\u00a0(2026-07-09)",
+    "time": "4:00\u00a0p.m. UTC\u22124",
+    "home": "Winner Match 89",
+    "away": "Winner Match 90"
+  },
+  {
+    "date": "July\u00a010,\u00a02026\u00a0(2026-07-10)",
+    "time": "12:00\u00a0p.m. UTC\u22127",
+    "home": "Winner Match 93",
+    "away": "Winner Match 94"
+  },
+  {
+    "date": "July\u00a011,\u00a02026\u00a0(2026-07-11)",
+    "time": "5:00\u00a0p.m. UTC\u22124",
+    "home": "Winner Match 91",
+    "away": "Winner Match 92"
+  },
+  {
+    "date": "July\u00a011,\u00a02026\u00a0(2026-07-11)",
+    "time": "8:00\u00a0p.m. UTC\u22125",
+    "home": "Winner Match 95",
+    "away": "Winner Match 96"
+  },
+  {
+    "date": "July\u00a014,\u00a02026\u00a0(2026-07-14)",
+    "time": "2:00\u00a0p.m. UTC\u22125",
+    "home": "Winner Match 97",
+    "away": "Winner Match 98"
+  },
+  {
+    "date": "July\u00a015,\u00a02026\u00a0(2026-07-15)",
+    "time": "3:00\u00a0p.m. UTC\u22124",
+    "home": "Winner Match 99",
+    "away": "Winner Match 100"
+  },
+  {
+    "date": "July\u00a018,\u00a02026\u00a0(2026-07-18)",
+    "time": "5:00\u00a0p.m. UTC\u22124",
+    "home": "Loser Match 101",
+    "away": "Loser Match 102"
+  },
+  {
+    "date": "July\u00a019,\u00a02026\u00a0(2026-07-19)",
+    "time": "3:00\u00a0p.m. UTC\u22124",
+    "home": "Winner Match 101",
+    "away": "Winner Match 102"
+  }
+]

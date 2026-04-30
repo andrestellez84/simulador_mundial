@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import Dict, List, Tuple, Optional
 from ...data.schedule import GROUP_MATCHES, MATCH_DATES
 from ...data.bracket.r16_to_final import BRACKET
+from ...data.bracket.r32_skeleton import R32_MATCHES
 from ...data.teams import TEAMS
 from ...analysis.predictions import predict_match
 from ...scraping.elo_scraper import refresh_elo_if_needed
@@ -27,13 +28,17 @@ def get_schedule():
     # Jun 11 a Jun 27
     for i, (group, t1, t2) in enumerate(GROUP_MATCHES):
         m_id = i + 1
-        date_str = MATCH_DATES.get(m_id, "TBD")
+        m_date_info = MATCH_DATES.get(m_id, ("TBD", "TBD"))
+        date_str = m_date_info[0] if isinstance(m_date_info, tuple) else m_date_info
+        time_str = m_date_info[1] if isinstance(m_date_info, tuple) else "TBD"
         
         # Predicciones exactas
         hfa = 100.0 if getattr(t1, 'is_host', False) else (-100.0 if getattr(t2, 'is_host', False) else 0.0)
         elo_h = initial_elos.get(t1.code, 1500)
         elo_a = initial_elos.get(t2.code, 1500)
         preds = predict_match(elo_h, elo_a, hfa)
+        preds["elo_home"] = elo_h
+        preds["elo_away"] = elo_a
         
         matches.append({
             "id": m_id,
@@ -43,10 +48,34 @@ def get_schedule():
             "away": t2.code,
             "away_name": t2.name,
             "date": date_str,
+            "time": time_str,
             "predictions": preds
         })
         
     # Knockouts (73 to 104)
+    # First R32 (73 to 88)
+    for m_id, data in R32_MATCHES.items():
+        stage = "Round of 32"
+        home_str = data["home"]
+        away_str = data.get("away", "Wildcard")
+        
+        m_date_info = MATCH_DATES.get(m_id, ("TBD", "TBD"))
+        date_str = m_date_info[0] if isinstance(m_date_info, tuple) else m_date_info
+        time_str = m_date_info[1] if isinstance(m_date_info, tuple) else "TBD"
+        
+        matches.append({
+            "id": m_id,
+            "stage": stage,
+            "home": f"Position {home_str}",
+            "home_name": "-",
+            "away": f"Position {away_str}",
+            "away_name": "-",
+            "date": date_str,
+            "time": time_str,
+            "predictions": None
+        })
+
+    # Then R16 to Final (89 to 104)
     for m_id, (h_ref, a_ref) in BRACKET.items():
         if 73 <= m_id <= 88: stage = "Round of 32"
         elif 89 <= m_id <= 96: stage = "Round of 16"
@@ -55,6 +84,10 @@ def get_schedule():
         elif m_id == 103: stage = "Third Place"
         else: stage = "Final"
         
+        m_date_info = MATCH_DATES.get(m_id, ("TBD", "TBD"))
+        date_str = m_date_info[0] if isinstance(m_date_info, tuple) else m_date_info
+        time_str = m_date_info[1] if isinstance(m_date_info, tuple) else "TBD"
+        
         matches.append({
             "id": m_id,
             "stage": stage,
@@ -62,7 +95,8 @@ def get_schedule():
             "home_name": "-",
             "away": f"Winner {a_ref}",
             "away_name": "-",
-            "date": "TBD",
+            "date": date_str,
+            "time": time_str,
             "predictions": None
         })
         

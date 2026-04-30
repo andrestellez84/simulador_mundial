@@ -103,7 +103,10 @@ export default function Schedule() {
             {matches.map(m => (
               <tr key={m.id} onMouseEnter={() => setHoveredMatch(m.id)} onMouseLeave={() => setHoveredMatch(null)} style={{ position: 'relative' }}>
                 <td style={{ color: 'var(--text-muted)' }}>{m.id}</td>
-                <td>{m.date}</td>
+                <td>
+                   <div style={{ fontWeight: 'bold' }}>{m.date}</div>
+                   <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{m.time}</div>
+                </td>
                 <td>
                    <span style={{ padding: '0.2rem 0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', fontSize: '0.8rem' }}>
                      {m.stage}

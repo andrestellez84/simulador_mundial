@@ -5,6 +5,7 @@ import Knockouts from './components/Knockouts';
 import TodayMatches from './components/TodayMatches';
 import EloAnalytics from './components/EloAnalytics';
 import Schedule from './components/Schedule';
+import NextMatches from './components/NextMatches';
 import { requestSimulation, checkSimulationStatus, getTeams } from './api';
 
 function App() {
@@ -74,6 +75,7 @@ function App() {
           <button className="btn" onClick={() => setActiveTab('overview')} style={{ opacity: activeTab === 'overview' ? 1 : 0.7 }}>Overview</button>
           <button className="btn" onClick={() => setActiveTab('groups')} style={{ opacity: activeTab === 'groups' ? 1 : 0.7 }}>Group Stage</button>
           <button className="btn" onClick={() => setActiveTab('knockout')} style={{ opacity: activeTab === 'knockout' ? 1 : 0.7 }}>Knockouts</button>
+          <button className="btn" onClick={() => setActiveTab('next')} style={{ opacity: activeTab === 'next' ? 1 : 0.7 }}>Próxima Fecha</button>
           <button className="btn" onClick={() => setActiveTab('schedule')} style={{ opacity: activeTab === 'schedule' ? 1 : 0.7 }}>Live Schedule</button>
           <button className="btn" onClick={() => setActiveTab('elo')} style={{ opacity: activeTab === 'elo' ? 1 : 0.7 }}>ELO Analytics</button>
         </div>
@@ -123,6 +125,7 @@ function App() {
 
         {activeTab === 'groups' && <Groups resultData={resultData} teamsList={teamsList} />}
         {activeTab === 'knockout' && <Knockouts resultData={resultData} teamsList={teamsList} />}
+        {activeTab === 'next' && <NextMatches resultData={resultData} />}
         {activeTab === 'schedule' && <Schedule />}
         {activeTab === 'elo' && <EloAnalytics resultData={resultData} teamsList={teamsList} />}
         
