@@ -12,8 +12,8 @@ def calculate_lambdas(elo_h: float, elo_a: float, kwargs_hfa: float = 0.0) -> Tu
     Calcula las tasas lambda (esperanza de goles) basándose en la diferencia ELO y el HFA.
     """
     diff = elo_h - elo_a + kwargs_hfa
-    lam_h = config.MU_GOALS * (10 ** (diff / 800.0))
-    lam_a = config.MU_GOALS * (10 ** (-diff / 800.0))
+    lam_h = config.MU_GOALS * (10 ** (diff / 1500.0))
+    lam_a = config.MU_GOALS * (10 ** (-diff / 1500.0))
     return lam_h, lam_a
 
 def tau_dixon_coles(x: int, y: int, lam_h: float, lam_a: float, rho: float) -> float:
