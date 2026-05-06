@@ -3,8 +3,8 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # Modelo
-    MU_GOALS: float = 1.25          # Media de goles por equipo en un Mundial
-    RHO_DIXON_COLES: float = -0.1   # Corrección de dependencia
+    MU_GOALS: float = 1.30          # Media de goles por equipo en un Mundial
+    RHO_DIXON_COLES: float = 0.0    # Corrección de dependencia (0 = Poisson puro)
     K_FACTOR: int = 60              # Para update ELO (WC)
     HFA_FULL: float = 100.0         # Ventaja local completa
     HFA_STRONG_DIASPORA: float = 35.0
