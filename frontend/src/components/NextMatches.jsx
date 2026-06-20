@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { getSchedule } from '../api';
 import { getFlagUrl } from '../flagMap';
+import { renderProb, getTeamStatusColor, isPositionDefined } from '../utils';
 
-export default function NextMatches({ resultData }) {
+export default function NextMatches({ resultData, prevResultData }) {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -54,7 +55,20 @@ export default function NextMatches({ resultData }) {
   const handlePrev = () => { if (currentIndex > 0) setSelectedDate(allDates[currentIndex - 1]); };
   const handleNext = () => { if (currentIndex < allDates.length - 1) setSelectedDate(allDates[currentIndex + 1]); };
 
-  const displayMatches = matches.filter(m => m.date === targetDate);
+  const parseTime = (timeStr) => {
+    if (!timeStr || timeStr === "TBD") return 9999;
+    let [time, ampm] = timeStr.split(' ');
+    if (!time || !ampm) return 9999;
+    let [hours, minutes] = time.split(':');
+    hours = parseInt(hours);
+    if (ampm === 'p.m.' && hours !== 12) hours += 12;
+    if (ampm === 'a.m.' && hours === 12) hours = 0;
+    return hours * 60 + parseInt(minutes);
+  };
+
+  const displayMatches = matches
+    .filter(m => m.date === targetDate)
+    .sort((a, b) => parseTime(a.time) - parseTime(b.time));
 
   // Helper para extraer probabilidad de campeón de resultData
   const getChampProb = (teamCode) => {
@@ -80,7 +94,15 @@ export default function NextMatches({ resultData }) {
           No hay partidos programados para mostrar.
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.5rem' }}>
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 
+            displayMatches.length === 6 ? 'repeat(3, 1fr)' :
+            displayMatches.length === 4 ? 'repeat(2, 1fr)' : 
+            displayMatches.length === 3 ? 'repeat(3, 1fr)' : 
+            displayMatches.length === 2 ? 'repeat(2, 1fr)' : '1fr', 
+          gap: '1.5rem' 
+        }}>
           {displayMatches.map(m => {
             const champHome = getChampProb(m.home);
             const champAway = getChampProb(m.away);
@@ -91,31 +113,80 @@ export default function NextMatches({ resultData }) {
                 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
                   <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{m.stage}</span>
-                  <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>{m.time}</span>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>{m.time}</div>
+                    <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)' }}>{m.venue}</div>
+                  </div>
                 </div>
 
                 {/* Equipos */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                  <div style={{ textAlign: 'center', flex: 1 }}>
+                  <div style={{ textAlign: 'center', flex: 1, color: getTeamStatusColor(m.home, resultData) || 'inherit' }}>
                     {m.home_name !== "-" && <img src={getFlagUrl(m.home)} className="flag-icon" style={{ width: '40px', height: '30px', margin: '0 auto 0.5rem' }} />}
-                    <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{m.home_name !== "-" ? m.home_name : m.home}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>ELO: {m.predictions ? Math.round(m.predictions.elo_home) : '-'}</div>
+                    <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+                      {m.home_name !== "-" ? m.home_name : m.home}
+                      {isPositionDefined(m.home, resultData) && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: '4px' }}>(DEF)</span>}
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                      ELO: {m.predictions ? Math.round(m.predictions.elo_home) : '-'}
+                      {m.predictions && m.predictions.extra_elo_home > 0 && (
+                        <span style={{ color: '#4ade80', marginLeft: '4px' }}>
+                          (+{Math.round(m.predictions.extra_elo_home)})
+                        </span>
+                      )}
+                    </div>
                     {champHome !== null && (
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
-                        Camp: <span style={{ color: 'var(--accent)' }}>{(champHome * 100).toFixed(1)}%</span>
+                        Camp: <span style={{ color: 'var(--accent)' }}>{renderProb(champHome, prevResultData?.teams[m.home]?.champion)}</span>
                       </div>
                     )}
                   </div>
                   
-                  <div style={{ fontWeight: 'bold', color: 'var(--text-muted)', padding: '0 1rem' }}>VS</div>
-
-                  <div style={{ textAlign: 'center', flex: 1 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 1rem' }}>
+                    {m.result ? (
+                      <>
+                        <div style={{ fontWeight: 'bold', fontSize: '1.5rem', color: 'var(--accent)' }}>
+                          {m.result.gh} - {m.result.ga}
+                        </div>
+                        <div style={{ fontSize: '0.7rem', color: m.result.surprise > 0.7 ? '#ef4444' : m.result.surprise > 0.4 ? '#fbbf24' : 'var(--text-muted)', marginTop: '0.3rem', textAlign: 'center', background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '4px' }}>
+                          Sorpresa: {(m.result.surprise * 100).toFixed(1)}%
+                          {m.result.surpriser && <div style={{ fontSize: '0.6rem', opacity: 0.7 }}>por {m.result.surpriser}</div>}
+                        </div>
+                      </>
+                    ) : (
+                      <div style={{ fontWeight: 'bold', color: 'var(--text-muted)' }}>VS</div>
+                    )}
+                    {champHome !== null && champAway !== null && (
+                      <div 
+                        title="Suma de probabilidad de campeón de ambos equipos"
+                        style={{ 
+                          marginTop: '0.4rem',
+                          fontWeight: 'bold',
+                          fontSize: ((champHome + champAway) * 100) > 1.5 ? '1.1rem' : '0.75rem',
+                          color: ((champHome + champAway) * 100) > 1.5 ? '#ef4444' : 'var(--text-muted)'
+                        }}
+                      >
+                        ⭐ {((champHome + champAway) * 100).toFixed(1)}%
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ textAlign: 'center', flex: 1, color: getTeamStatusColor(m.away, resultData) || 'inherit' }}>
                     {m.home_name !== "-" && <img src={getFlagUrl(m.away)} className="flag-icon" style={{ width: '40px', height: '30px', margin: '0 auto 0.5rem' }} />}
-                    <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{m.away_name !== "-" ? m.away_name : m.away}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>ELO: {m.predictions ? Math.round(m.predictions.elo_away) : '-'}</div>
+                    <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+                      {m.away_name !== "-" ? m.away_name : m.away}
+                      {isPositionDefined(m.away, resultData) && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: '4px' }}>(DEF)</span>}
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                      ELO: {m.predictions ? Math.round(m.predictions.elo_away) : '-'}
+                      {m.predictions && m.predictions.extra_elo_away > 0 && (
+                        <span style={{ color: '#4ade80', marginLeft: '4px' }}>
+                          (+{Math.round(m.predictions.extra_elo_away)})
+                        </span>
+                      )}
+                    </div>
                     {champAway !== null && (
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
-                        Camp: <span style={{ color: 'var(--accent)' }}>{(champAway * 100).toFixed(1)}%</span>
+                        Camp: <span style={{ color: 'var(--accent)' }}>{renderProb(champAway, prevResultData?.teams[m.away]?.champion)}</span>
                       </div>
                     )}
                   </div>

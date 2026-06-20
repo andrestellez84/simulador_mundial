@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     # Paths
     CACHE_DIR: Path = Path("storage/cache")
     OUTPUT_DIR: Path = Path("storage/outputs")
+    LIVE_RESULTS_FILE: Path = Path("storage/live_results.json")
+    MANUAL_ELO_FILE: Path = Path("storage/manual_elo.json")
 
     class Config:
         env_file = ".env"

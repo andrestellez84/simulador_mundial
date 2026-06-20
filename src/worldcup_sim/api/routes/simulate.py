@@ -1,5 +1,8 @@
 import uuid
-import threading
+import json
+import datetime
+import hashlib
+from pathlib import Path
 from fastapi import APIRouter, BackgroundTasks, Request
 from ..schemas import SimulateRequest, SimulateResponse
 from ...data.teams import TEAMS
@@ -10,6 +13,15 @@ from ...simulation.aggregator import aggregate_tournament_results
 router = APIRouter(prefix="/simulate", tags=["simulate"])
 
 JOBS = {}
+
+HISTORY_DIR = Path("storage/history")
+HISTORY_DIR.mkdir(parents=True, exist_ok=True)
+HASH_FILE = HISTORY_DIR / "latest_hash.txt"
+
+def get_config_hash(initial_elos, live_results):
+    serialized_live = {f"{k[0]}-{k[1]}": v for k, v in live_results.items()} if live_results else {}
+    config_str = json.dumps({"elos": initial_elos, "live": serialized_live}, sort_keys=True)
+    return hashlib.md5(config_str.encode()).hexdigest()
 
 def simulation_task(job_id: str, req: SimulateRequest, live_results: dict):
     try:
@@ -33,13 +45,35 @@ def simulation_task(job_id: str, req: SimulateRequest, live_results: dict):
         # Eliminar '_raw_counters' para el payload final
         dumped = agg_res.model_dump(exclude={"teams": {"__all__": {"_raw_counters"}}})
         
+        # Hash current configuration
+        current_hash = get_config_hash(initial_elos, live_results)
+        
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+        dumped["_metadata"] = {
+            "timestamp": timestamp,
+            "hash": current_hash,
+            "simulations": req.n_simulations
+        }
+        
+        last_hash = ""
+        if HASH_FILE.exists():
+            last_hash = HASH_FILE.read_text().strip()
+            
+        if current_hash != last_hash and req.n_simulations >= 100000:
+            # Config changed -> save new history snapshot
+            snapshot_path = HISTORY_DIR / f"snapshot_{timestamp}.json"
+            
+            with open(snapshot_path, "w", encoding="utf-8") as f:
+                json.dump(dumped, f, ensure_ascii=False)
+            
+            HASH_FILE.write_text(current_hash)
+
         JOBS[job_id]["status"] = "completed"
         JOBS[job_id]["progress"] = 100.0
         JOBS[job_id]["result"] = dumped
     except Exception as e:
         JOBS[job_id]["status"] = "failed"
         JOBS[job_id]["message"] = str(e)
-
 
 @router.post("/", response_model=SimulateResponse)
 def trigger_simulation(req: SimulateRequest, bg_tasks: BackgroundTasks, request: Request):

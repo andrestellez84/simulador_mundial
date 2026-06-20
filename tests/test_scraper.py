@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 from worldcup_sim.scraping.elo_scraper import parse_eloratings_table
 
-MOCK_TSV = "1\\t1\\tBR\\t2100\\n2\\t2\\tMX\\t1800\\n"
+MOCK_TSV = "1\t1\tBR\t2100\n2\t2\tMX\t1800\n"
 
 def test_parse_eloratings_table():
     elos = parse_eloratings_table(MOCK_TSV)

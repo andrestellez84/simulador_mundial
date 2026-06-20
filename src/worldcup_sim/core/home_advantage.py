@@ -1,37 +1,34 @@
-from ..models.team import Team, Venue
-from ..config import config
+from ..data.schedule import MATCH_VENUES
+from ..data.venues_hfa import HFA_DATA, VENUE_STR_TO_KEY
 
-HOST_COUNTRIES = {"Mexico", "USA", "Canada"}
-
-def home_advantage(team: Team, opponent: Team, venue: Venue) -> float:
+def get_net_hfa(match_id: int, home_code: str, away_code: str) -> float:
     """
-    Calcula el Home Field Advantage (HFA) en puntos ELO basado en las reglas del Mundial 2026.
+    Calcula la diferencia neta de Home Field Advantage (HFA) en puntos ELO
+    usando la base de datos JSON de diásporas y estadios.
+    Retorna hfa_home - hfa_away.
     """
-    # 1. Anfitrión jugando en su país
-    if team.country == venue.country and team.country in HOST_COUNTRIES:
-        return config.HFA_FULL
+    venue_str = MATCH_VENUES.get(match_id)
+    if not venue_str:
+        return 0.0
+        
+    venue_key = VENUE_STR_TO_KEY.get(venue_str)
+    if not venue_key or venue_key not in HFA_DATA:
+        return 0.0
+        
+    adv_dict = HFA_DATA[venue_key]["advantages"]
+    
+    hfa_home = adv_dict.get(home_code, 0.0)
+    hfa_away = adv_dict.get(away_code, 0.0)
+    
+    return float(hfa_home - hfa_away)
 
-    # 2. México jugando en EE.UU. en ciudades con fuerte diáspora
-    if team.code == "MEX" and venue.city in {"Los Angeles", "Dallas", "Houston"}:
-        return config.HFA_STRONG_DIASPORA
-
-    # 3. Equipos CONCACAF/CONMEBOL jugando en México o sur de EE.UU. ("fuerte" o "suave" según interpretación, aquí MILD)
-    if team.confederation in {"CONMEBOL", "CONCACAF"} and venue.country == "Mexico":
-        # Evitar doble cuenta si ya se contó como anfitrión
-        if team.country != "Mexico":
-            return config.HFA_MILD_DIASPORA
-
-    # 4. Argentina con gran apoyo en el sur/este de EE.UU.
-    if team.code == "ARG" and venue.city in {"Miami", "New York/New Jersey"}:
-        return config.HFA_MILD_DIASPORA
-
-    # 5. Brasil con diáspora en Miami y Boston
-    if team.code == "BRA" and venue.city in {"Miami", "Boston"}:
-        return config.HFA_MILD_DIASPORA
-
-    # 6. Portugal en Boston (gran diáspora)
-    if team.code == "POR" and venue.city == "Boston":
-        return config.HFA_MILD_DIASPORA
-
-    # 7. Partido neutral
-    return 0.0
+def get_raw_hfa(match_id: int, team_code: str) -> float:
+    """
+    Retorna la ventaja pura de ELO para un equipo en un estadio.
+    """
+    venue_str = MATCH_VENUES.get(match_id)
+    if not venue_str: return 0.0
+    venue_key = VENUE_STR_TO_KEY.get(venue_str)
+    if not venue_key or venue_key not in HFA_DATA: return 0.0
+    
+    return float(HFA_DATA[venue_key]["advantages"].get(team_code, 0.0))

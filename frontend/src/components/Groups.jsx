@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { getFlagUrl } from '../flagMap';
+import { renderProb, renderRankDiff, getTeamStatusColor, isPositionDefined } from '../utils';
 
-export default function Groups({ resultData, teamsList }) {
+export default function Groups({ resultData, prevResultData, teamsList }) {
   const [activeGroup, setActiveGroup] = useState('A');
   const [viewMode, setViewMode] = useState('standings'); // "standings" or "stats"
   const [sortKey, setSortKey] = useState('points'); // points, gd, gf, ga, w, d, l, 1st, 2nd, 3rd, 4th, advance
@@ -52,15 +53,54 @@ export default function Groups({ resultData, teamsList }) {
      else if (sortKey === 'advance') { valA = a.advance_to_r32; valB = b.advance_to_r32; }
      
      if (valA === valB) {
-         // Tiebreakers
-         if (a.expected_points_group !== b.expected_points_group) return b.expected_points_group - a.expected_points_group;
-         if (a.expected_goal_diff !== b.expected_goal_diff) return b.expected_goal_diff - a.expected_goal_diff;
-         return (b.expected_goals_for_group || 0) - (a.expected_goals_for_group || 0);
+        if (sortKey === 'points') {
+           valA = a.expected_goal_diff; valB = b.expected_goal_diff;
+        }
      }
-     
+
      if (sortDir === 'asc') return valA - valB;
      return valB - valA;
   });
+
+  const getPrevGroupTeams = (grp, sk, sd) => {
+     if (!prevResultData) return [];
+     const grpTeams = Object.values(prevResultData.teams).filter(t => t.group === grp);
+     return grpTeams.map(t => ({
+       ...t,
+       expected_goal_diff: (t.expected_goals_for_group || 0) - (t.expected_goals_against_group || 0)
+     })).sort((a, b) => {
+        let valA = 0; let valB = 0;
+        if (sk === 'points') { valA = a.expected_points_group; valB = b.expected_points_group; }
+        else if (sk === 'gd') { valA = a.expected_goal_diff; valB = b.expected_goal_diff; }
+        else if (sk === 'gf') { valA = a.expected_goals_for_group; valB = b.expected_goals_for_group; }
+        else if (sk === 'ga') { valA = a.expected_goals_against_group; valB = b.expected_goals_against_group; }
+        else if (sk === 'w') { valA = a.expected_wins_group; valB = b.expected_wins_group; }
+        else if (sk === 'd') { valA = a.expected_draws_group; valB = b.expected_draws_group; }
+        else if (sk === 'l') { valA = a.expected_losses_group; valB = b.expected_losses_group; }
+        else if (sk === '1st') { valA = a.group_position_probs['1st']; valB = b.group_position_probs['1st']; }
+        else if (sk === '2nd') { valA = a.group_position_probs['2nd']; valB = b.group_position_probs['2nd']; }
+        else if (sk === '3rd') { valA = a.group_position_probs['3rd']; valB = b.group_position_probs['3rd']; }
+        else if (sk === '4th') { valA = a.group_position_probs['4th']; valB = b.group_position_probs['4th']; }
+        else if (sk === 'advance') { valA = a.advance_to_r32; valB = b.advance_to_r32; }
+        
+        if (valA === valB) {
+           if (sk === 'points') {
+              valA = a.expected_goal_diff; valB = b.expected_goal_diff;
+           }
+        }
+        if (sd === 'asc') return valA - valB;
+        return valB - valA;
+     });
+  };
+
+  const prevGroupTeams = getPrevGroupTeams(activeGroup, sortKey, sortDir);
+  
+  const getPrevRank = (teamCode, prevList) => {
+     if (!prevList || prevList.length === 0) return null;
+     const idx = prevList.findIndex(t => t.team_code === teamCode);
+     if (idx === -1) return null;
+     return idx + 1;
+  };
 
   // Calcular los 12 mejores probables terceros: Para cada grupo, el equipo más probable a ser 3ro
   const thirdPlaceProbables = [];
@@ -84,6 +124,31 @@ export default function Groups({ resultData, teamsList }) {
       return (b.expected_goals_for_group || 0) - (a.expected_goals_for_group || 0);
   });
 
+  const getPrevThirdPlaceProbables = () => {
+     if (!prevResultData) return [];
+     const groupsMap = {};
+     Object.values(prevResultData.teams).forEach(t => {
+       if (!groupsMap[t.group]) groupsMap[t.group] = [];
+       groupsMap[t.group].push(t);
+     });
+     const thirdPlace = [];
+     Object.keys(groupsMap).forEach(g => {
+         const gTeams = groupsMap[g];
+         const best3rd = [...gTeams].sort((a,b) => b.group_position_probs['3rd'] - a.group_position_probs['3rd'])[0];
+         thirdPlace.push({
+            ...best3rd,
+            expected_goal_diff: (best3rd.expected_goals_for_group || 0) - (best3rd.expected_goals_against_group || 0)
+         });
+     });
+     thirdPlace.sort((a,b) => {
+         if (a.expected_points_group !== b.expected_points_group) return b.expected_points_group - a.expected_points_group;
+         if (a.expected_goal_diff !== b.expected_goal_diff) return b.expected_goal_diff - a.expected_goal_diff;
+         return (b.expected_goals_for_group || 0) - (a.expected_goals_for_group || 0);
+     });
+     return thirdPlace;
+  };
+  const prevThirdPlaceProbables = getPrevThirdPlaceProbables();
+
   return (
     <div className="animate-fade-in">
       <div className="glass-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
@@ -100,6 +165,18 @@ export default function Groups({ resultData, teamsList }) {
         </div>
       </div>
 
+      <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '0.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#4ade80' }}></span> Clasificado
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#fbbf24' }}></span> Con Vida
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#f87171' }}></span> Eliminado
+        </div>
+      </div>
+
       <div className="glass-card" style={{ overflowX: 'auto' }}>
         <h3 style={{ marginBottom: '1rem' }}>Group {activeGroup} {viewMode === 'standings' ? 'Probabilities' : 'Expected Averages'}</h3>
         
@@ -107,6 +184,7 @@ export default function Groups({ resultData, teamsList }) {
         <table className="custom-table" style={{ width: '100%' }}>
           <thead>
             <tr>
+              <th style={{ width: '30px', textAlign: 'center' }}>#</th>
               <th style={{ width: '30%' }}>Team</th>
               <th onClick={() => handleSort('1st')} style={{ cursor: 'pointer' }}>1st Pl.{renderSortIcon('1st')}</th>
               <th onClick={() => handleSort('2nd')} style={{ cursor: 'pointer' }}>2nd Pl.{renderSortIcon('2nd')}</th>
@@ -116,25 +194,36 @@ export default function Groups({ resultData, teamsList }) {
             </tr>
           </thead>
           <tbody>
-            {groupTeams.map(t => (
+            {groupTeams.map((t, index) => {
+              const prev = prevResultData ? prevResultData.teams[t.team_code] : null;
+              return (
               <tr key={t.team_code}>
-                <td className="team-cell">
+                <td style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span>{index + 1}</span>
+                    {renderRankDiff(index + 1, getPrevRank(t.team_code, prevGroupTeams))}
+                  </div>
+                </td>
+                <td className="team-cell" style={{ color: getTeamStatusColor(t.team_code, resultData) || 'inherit' }}>
                   {teamsMap[t.team_code]?.name || t.team_code}
+                  {isPositionDefined(t.team_code, resultData) && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: '4px' }}>(DEF)</span>}
                   <img src={getFlagUrl(t.team_code)} className="flag-icon" style={{ width: 16, height: 12, marginLeft: 8 }} />
                 </td>
-                <td className="highlight-cell">{(t.group_position_probs['1st'] * 100).toFixed(1)}%</td>
-                <td>{(t.group_position_probs['2nd'] * 100).toFixed(1)}%</td>
-                <td style={{ color: 'var(--text-muted)' }}>{(t.group_position_probs['3rd'] * 100).toFixed(1)}%</td>
-                <td style={{ color: 'var(--text-muted)', opacity: 0.5 }}>{(t.group_position_probs['4th'] * 100).toFixed(1)}%</td>
-                <td style={{ fontWeight: 'bold', color: 'var(--success)' }}>{(t.advance_to_r32 * 100).toFixed(1)}%</td>
+                <td className="highlight-cell">{renderProb(t.group_position_probs['1st'], prev?.group_position_probs['1st'])}</td>
+                <td>{renderProb(t.group_position_probs['2nd'], prev?.group_position_probs['2nd'])}</td>
+                <td style={{ color: 'var(--text-muted)' }}>{renderProb(t.group_position_probs['3rd'], prev?.group_position_probs['3rd'])}</td>
+                <td style={{ color: 'var(--text-muted)', opacity: 0.5 }}>{renderProb(t.group_position_probs['4th'], prev?.group_position_probs['4th'])}</td>
+                <td style={{ fontWeight: 'bold', color: 'var(--success)' }}>{renderProb(t.advance_to_r32, prev?.advance_to_r32)}</td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
         ) : (
         <table className="custom-table" style={{ width: '100%' }}>
           <thead>
             <tr>
+              <th style={{ width: '30px', textAlign: 'center' }}>#</th>
               <th style={{ width: '30%' }}>Team</th>
               <th onClick={() => handleSort('points')} style={{ cursor: 'pointer' }}>Pts{renderSortIcon('points')}</th>
               <th onClick={() => handleSort('w')} style={{ cursor: 'pointer' }}>W{renderSortIcon('w')}</th>
@@ -146,10 +235,19 @@ export default function Groups({ resultData, teamsList }) {
             </tr>
           </thead>
           <tbody>
-            {groupTeams.map(t => (
+            {groupTeams.map((t, index) => {
+              const prev = prevResultData ? prevResultData.teams[t.team_code] : null;
+              return (
               <tr key={t.team_code}>
-                <td className="team-cell">
+                <td style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span>{index + 1}</span>
+                    {renderRankDiff(index + 1, getPrevRank(t.team_code, prevGroupTeams))}
+                  </div>
+                </td>
+                <td className="team-cell" style={{ color: getTeamStatusColor(t.team_code, resultData) || 'inherit' }}>
                   {teamsMap[t.team_code]?.name || t.team_code}
+                  {isPositionDefined(t.team_code, resultData) && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: '4px' }}>(DEF)</span>}
                   <img src={getFlagUrl(t.team_code)} className="flag-icon" style={{ width: 16, height: 12, marginLeft: 8 }} />
                 </td>
                 <td style={{ fontWeight: 'bold', color: 'var(--accent)' }}>{(t.expected_points_group || 0).toFixed(2)}</td>
@@ -160,7 +258,8 @@ export default function Groups({ resultData, teamsList }) {
                 <td style={{ color: 'var(--danger)' }}>{(t.expected_goals_against_group || 0).toFixed(2)}</td>
                 <td style={{ fontWeight: 'bold' }}>{(t.expected_goal_diff > 0 ? '+' : '')}{t.expected_goal_diff.toFixed(2)}</td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
         )}
@@ -186,10 +285,21 @@ export default function Groups({ resultData, teamsList }) {
             </tr>
           </thead>
           <tbody>
-            {thirdPlaceProbables.map((t, idx) => (
+            {thirdPlaceProbables.map((t, idx) => {
+              const prev = prevResultData ? prevResultData.teams[t.team_code] : null;
+              let prev3rdAdvance = undefined;
+              if (prev) {
+                prev3rdAdvance = Math.max(0, prev.advance_to_r32 - (prev.group_position_probs['1st'] + prev.group_position_probs['2nd']));
+              }
+              return (
               <tr key={t.team_code} style={{ opacity: idx >= 8 ? 0.5 : 1 }}>
-                <td style={{ color: 'var(--text-muted)' }}>#{idx + 1}</td>
-                <td className="team-cell">
+                <td style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span>#{idx + 1}</span>
+                    {renderRankDiff(idx + 1, getPrevRank(t.team_code, prevThirdPlaceProbables))}
+                  </div>
+                </td>
+                <td className="team-cell" style={{ color: getTeamStatusColor(t.team_code, resultData) || 'inherit' }}>
                   {teamsMap[t.team_code]?.name || t.team_code}
                   <img src={getFlagUrl(t.team_code)} className="flag-icon" style={{ width: 16, height: 12, marginLeft: 8 }} />
                 </td>
@@ -197,10 +307,11 @@ export default function Groups({ resultData, teamsList }) {
                 <td style={{ fontWeight: 'bold' }}>{(t.expected_points_group || 0).toFixed(2)}</td>
                 <td>{(t.expected_goal_diff > 0 ? '+' : '')}{t.expected_goal_diff.toFixed(2)}</td>
                 <td>{(t.expected_goals_for_group || 0).toFixed(2)}</td>
-                <td>{(t.group_position_probs['3rd'] * 100).toFixed(1)}%</td>
-                <td style={{ fontWeight: 'bold', color: 'var(--success)' }}>{(t.thirdPlaceAdvanceProb * 100).toFixed(1)}%</td>
+                <td>{renderProb(t.group_position_probs['3rd'], prev?.group_position_probs['3rd'])}</td>
+                <td style={{ fontWeight: 'bold', color: 'var(--success)' }}>{renderProb(t.thirdPlaceAdvanceProb, prev3rdAdvance)}</td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>

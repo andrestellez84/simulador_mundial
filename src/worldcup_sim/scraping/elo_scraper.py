@@ -7,6 +7,7 @@ from tenacity import retry, wait_exponential, stop_after_attempt
 from ..config import config
 from .elo_cache import load_cache, save_cache
 from ..data.teams import TEAMS
+from ..data.manual_elo_store import load_manual_elos
 
 log = logging.getLogger(__name__)
 
@@ -127,4 +128,50 @@ def refresh_elo_if_needed(alive_teams: set[str], max_age_hours: int = 24) -> dic
             else:
                 updated_elos[team] = 1500 # Fallback extremo
 
+    # Aplicar manual overrides
+    manual_elos = load_manual_elos()
+    for team, m_elo in manual_elos.items():
+        if team in updated_elos:
+            updated_elos[team] = m_elo
+
     return updated_elos
+
+@retry(wait=wait_exponential(multiplier=config.SCRAPE_RATE_LIMIT_S, min=2, max=10), stop=stop_after_attempt(3))
+def fetch_latest_results() -> httpx.Response:
+    headers = {"User-Agent": config.USER_AGENT}
+    response = httpx.get("https://www.eloratings.net/latest.tsv", headers=headers, timeout=config.SCRAPE_TIMEOUT_S)
+    response.raise_for_status()
+    return response
+
+def scrape_latest_results() -> dict[tuple[str, str], tuple[int, int]]:
+    """
+    Descarga latest.tsv y devuelve un diccionario con los resultados recientes.
+    Key: (fifa_code_home, fifa_code_away), Value: (goals_home, goals_away)
+    """
+    try:
+        response = fetch_latest_results()
+    except Exception as e:
+        log.error(f"Error fetching latest results: {e}")
+        return {}
+        
+    reverse_map = {v: k for k, v in ELO_TSV_MAP.items()}
+    results = {}
+    
+    for line in response.text.split('\n'):
+        parts = line.split('\t')
+        if len(parts) >= 7:
+            tsv_home = parts[3]
+            tsv_away = parts[4]
+            try:
+                goals_home = int(parts[5])
+                goals_away = int(parts[6])
+                
+                # Convertir a códigos de 3 letras de FIFA si existen
+                fifa_home = reverse_map.get(tsv_home, tsv_home)
+                fifa_away = reverse_map.get(tsv_away, tsv_away)
+                
+                results[(fifa_home, fifa_away)] = (goals_home, goals_away)
+            except ValueError:
+                pass
+                
+    return results

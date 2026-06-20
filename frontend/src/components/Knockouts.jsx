@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { getFlagUrl } from '../flagMap';
+import { renderProb, getTeamStatusColor, isTeamDefinitiveForStage } from '../utils';
 
-export default function Knockouts({ resultData, teamsList }) {
+export default function Knockouts({ resultData, prevResultData, teamsList }) {
   const [selectedTeam, setSelectedTeam] = useState('ARG');
   const [viewMode, setViewMode] = useState('paths'); // paths | bracket
 
@@ -11,27 +12,51 @@ export default function Knockouts({ resultData, teamsList }) {
 
   const sortedTeams = [...teamsList].sort((a,b) => a.name.localeCompare(b.name));
   const teamRes = resultData.teams[selectedTeam];
+  const prevRes = prevResultData ? prevResultData.teams[selectedTeam] : null;
   const teamInfo = teamsList.find(t => t.code === selectedTeam);
   
   const modalBracket = resultData.modal_bracket || {};
 
-  const SLOT_DESCRIPTIONS = {
-    73: ["Runner-up A", "Runner-up B"],
-    74: ["Winner E", "Best 3rd A/B/C/D/F"],
-    75: ["Winner F", "Runner-up C"],
-    76: ["Winner C", "Runner-up F"],
-    77: ["Winner I", "Best 3rd C/D/F/G/H"],
-    78: ["Runner-up E", "Runner-up I"],
-    79: ["Winner A", "Best 3rd C/E/F/H/I"],
-    80: ["Winner L", "Best 3rd E/H/I/J/K"],
-    81: ["Winner D", "Best 3rd B/E/F/I/J"],
-    82: ["Winner G", "Best 3rd A/E/H/I/J"],
-    83: ["Runner-up K", "Runner-up L"],
-    84: ["Winner H", "Runner-up J"],
-    85: ["Winner B", "Best 3rd E/F/G/I/J"],
-    86: ["Winner J", "Runner-up H"],
-    87: ["Winner K", "Best 3rd D/E/I/J/L"],
-    88: ["Runner-up D", "Runner-up G"]
+  const getDynamicSlot = (mId, isHome, code) => {
+    const group = resultData.teams[code]?.group;
+    if (!group) return "";
+    
+    if (mId === 73) return isHome ? "2A" : "2B";
+    if (mId === 74) return isHome ? "1E" : `3${group}`;
+    if (mId === 75) return isHome ? "1F" : "2C";
+    if (mId === 76) return isHome ? "1C" : "2F";
+    if (mId === 77) return isHome ? "1I" : `3${group}`;
+    if (mId === 78) return isHome ? "2E" : "2I";
+    if (mId === 79) return isHome ? "1A" : `3${group}`;
+    if (mId === 80) return isHome ? "1L" : `3${group}`;
+    if (mId === 81) return isHome ? "1D" : `3${group}`;
+    if (mId === 82) return isHome ? "1G" : `3${group}`;
+    if (mId === 83) return isHome ? "2K" : "2L";
+    if (mId === 84) return isHome ? "1H" : "2J";
+    if (mId === 85) return isHome ? "1B" : `3${group}`;
+    if (mId === 86) return isHome ? "1J" : "2H";
+    if (mId === 87) return isHome ? "1K" : `3${group}`;
+    if (mId === 88) return isHome ? "2D" : "2G";
+    
+    if (mId === 89) return isHome ? "W73" : "W75";
+    if (mId === 90) return isHome ? "W74" : "W77";
+    if (mId === 91) return isHome ? "W76" : "W78";
+    if (mId === 92) return isHome ? "W79" : "W80";
+    if (mId === 93) return isHome ? "W83" : "W84";
+    if (mId === 94) return isHome ? "W81" : "W82";
+    if (mId === 95) return isHome ? "W86" : "W88";
+    if (mId === 96) return isHome ? "W85" : "W87";
+    
+    if (mId === 97) return isHome ? "W89" : "W90";
+    if (mId === 98) return isHome ? "W93" : "W94";
+    if (mId === 99) return isHome ? "W91" : "W92";
+    if (mId === 100) return isHome ? "W95" : "W96";
+    if (mId === 101) return isHome ? "W97" : "W98";
+    if (mId === 102) return isHome ? "W99" : "W100";
+    if (mId === 103) return isHome ? "L101" : "L102";
+    if (mId === 104) return isHome ? "W101" : "W102";
+    
+    return "";
   };
   
   return (
@@ -70,7 +95,7 @@ export default function Knockouts({ resultData, teamsList }) {
         
         <div style={{ padding: '1rem', background: 'var(--bg-dark)', borderRadius: '0.5rem' }}>
           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>R32</div>
-          <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{(teamRes.advance_to_r32 * 100).toFixed(1)}%</div>
+          <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{renderProb(teamRes.advance_to_r32, prevRes?.advance_to_r32)}</div>
           <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
              {teamRes.most_likely_opponents?.R32?.map ? 
                 teamRes.most_likely_opponents.R32.map((opp, i) => <span key={i}>vs {opp.code} ({(opp.prob * 100).toFixed(1)}%)</span>) 
@@ -81,7 +106,7 @@ export default function Knockouts({ resultData, teamsList }) {
 
         <div style={{ padding: '1rem', background: 'var(--bg-dark)', borderRadius: '0.5rem', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Round of 16</div>
-          <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--accent)' }}>{(teamRes.advance_to_r16 * 100).toFixed(1)}%</div>
+          <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--accent)' }}>{renderProb(teamRes.advance_to_r16, prevRes?.advance_to_r16)}</div>
           <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
              {teamRes.most_likely_opponents?.R16?.map ? 
                 teamRes.most_likely_opponents.R16.map((opp, i) => <span key={i}>vs {opp.code} ({(opp.prob * 100).toFixed(1)}%)</span>) 
@@ -92,7 +117,7 @@ export default function Knockouts({ resultData, teamsList }) {
 
         <div style={{ padding: '1rem', background: 'var(--bg-dark)', borderRadius: '0.5rem', border: '1px solid rgba(59, 130, 246, 0.5)' }}>
           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Quarter-Finals</div>
-          <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--accent)' }}>{(teamRes.advance_to_qf * 100).toFixed(1)}%</div>
+          <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--accent)' }}>{renderProb(teamRes.advance_to_qf, prevRes?.advance_to_qf)}</div>
           <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
              {teamRes.most_likely_opponents?.QF?.map ? 
                 teamRes.most_likely_opponents.QF.map((opp, i) => <span key={i}>vs {opp.code} ({(opp.prob * 100).toFixed(1)}%)</span>) 
@@ -103,7 +128,7 @@ export default function Knockouts({ resultData, teamsList }) {
 
         <div style={{ padding: '1rem', background: 'var(--bg-dark)', borderRadius: '0.5rem', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Semi-Finals</div>
-          <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--success)' }}>{(teamRes.advance_to_sf * 100).toFixed(1)}%</div>
+          <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--success)' }}>{renderProb(teamRes.advance_to_sf, prevRes?.advance_to_sf)}</div>
           <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
              {teamRes.most_likely_opponents?.SF?.map ? 
                 teamRes.most_likely_opponents.SF.map((opp, i) => <span key={i}>vs {opp.code} ({(opp.prob * 100).toFixed(1)}%)</span>) 
@@ -114,7 +139,7 @@ export default function Knockouts({ resultData, teamsList }) {
 
         <div style={{ padding: '1rem', background: 'var(--bg-dark)', borderRadius: '0.5rem', border: '1px solid rgba(16, 185, 129, 0.8)' }}>
           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Final</div>
-          <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--success)' }}>{(teamRes.advance_to_final * 100).toFixed(1)}%</div>
+          <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--success)' }}>{renderProb(teamRes.advance_to_final, prevRes?.advance_to_final)}</div>
           <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
              {teamRes.most_likely_opponents?.Final?.map ? 
                 teamRes.most_likely_opponents.Final.map((opp, i) => <span key={i}>vs {opp.code} ({(opp.prob * 100).toFixed(1)}%)</span>) 
@@ -127,7 +152,7 @@ export default function Knockouts({ resultData, teamsList }) {
 
       <div style={{ marginTop: '2rem', textAlign: 'center' }}>
         <div style={{ display: 'inline-block', padding: '1rem 2rem', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '2rem', color: 'var(--success)', fontWeight: 'bold', fontSize: '1.5rem', border: '1px solid var(--success)' }}>
-          Champion Probability: {(teamRes.champion * 100).toFixed(1)}%
+          Champion Probability: <span style={{display: 'inline-block'}}>{renderProb(teamRes.champion, prevRes?.champion)}</span>
         </div>
       </div>
 
@@ -170,7 +195,7 @@ export default function Knockouts({ resultData, teamsList }) {
                        // Todas las líneas serán blanco brillante para que se vean claramente
                        let lineBg = 'rgba(255, 255, 255, 0.6)'; 
                        if (hasSelected) {
-                          lineBg = 'var(--success)';
+                          lineBg = '#3b82f6';
                        }
                        
                        return (
@@ -193,13 +218,13 @@ export default function Knockouts({ resultData, teamsList }) {
                              
                              <div style={{ 
                                 background: 'var(--bg-card)', 
-                                border: hasSelected ? '2px solid var(--success)' : '1px solid var(--border-color)', 
+                                border: hasSelected ? '2px solid #3b82f6' : '1px solid var(--border-color)', 
                                 borderRadius: '0.5rem', 
                                 padding: '0.5rem', 
                                 display: 'flex', 
                                 flexDirection: 'column', 
                                 gap: '0.4rem',
-                                boxShadow: hasSelected ? '0 0 15px rgba(16, 185, 129, 0.4)' : '0 4px 6px rgba(0,0,0,0.3)',
+                                boxShadow: hasSelected ? '0 0 15px rgba(59, 130, 246, 0.4)' : '0 4px 6px rgba(0,0,0,0.3)',
                                 position: 'relative',
                                 zIndex: 2,
                                 minHeight: '65px'
@@ -212,16 +237,22 @@ export default function Knockouts({ resultData, teamsList }) {
                                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, fontSize: '0.8rem', marginTop: '0.4rem', opacity: codes[0] === selectedTeam ? 1 : (hasSelected ? 0.5 : 1) }}>
                                          <img src={getFlagUrl(codes[0])} style={{ width: 16, height: 12, objectFit: 'cover', borderRadius: 2 }} />
                                          <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '120px', color: codes[0] === selectedTeam ? 'var(--success)' : 'inherit' }}>{hInfo?.name || codes[0]}</span>
-                                            {SLOT_DESCRIPTIONS[mId] && <span style={{ fontSize: '0.55rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>{SLOT_DESCRIPTIONS[mId][0]}</span>}
+                                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '120px', color: codes[0] === selectedTeam ? '#3b82f6' : (getTeamStatusColor(codes[0], resultData, stage.title.toLowerCase()) || 'inherit') }}>
+                                              {hInfo?.name || codes[0]}
+                                              {isTeamDefinitiveForStage(codes[0], resultData, stage.title.toLowerCase()) && <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginLeft: '4px' }}>(DEF)</span>}
+                                            </span>
+                                            <span style={{ fontSize: '0.55rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>{getDynamicSlot(mId, true, codes[0])}</span>
                                          </div>
                                       </div>
                                       <div style={{ height: '1px', background: 'var(--border-color)' }}></div>
                                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, fontSize: '0.8rem', opacity: codes[1] === selectedTeam ? 1 : (hasSelected ? 0.5 : 1) }}>
                                          <img src={getFlagUrl(codes[1])} style={{ width: 16, height: 12, objectFit: 'cover', borderRadius: 2 }} />
                                          <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '120px', color: codes[1] === selectedTeam ? 'var(--success)' : 'inherit' }}>{aInfo?.name || codes[1]}</span>
-                                            {SLOT_DESCRIPTIONS[mId] && <span style={{ fontSize: '0.55rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>{SLOT_DESCRIPTIONS[mId][1]}</span>}
+                                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '120px', color: codes[1] === selectedTeam ? '#3b82f6' : (getTeamStatusColor(codes[1], resultData, stage.title.toLowerCase()) || 'inherit') }}>
+                                              {aInfo?.name || codes[1]}
+                                              {isTeamDefinitiveForStage(codes[1], resultData, stage.title.toLowerCase()) && <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginLeft: '4px' }}>(DEF)</span>}
+                                            </span>
+                                            <span style={{ fontSize: '0.55rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>{getDynamicSlot(mId, false, codes[1])}</span>
                                          </div>
                                       </div>
                                    </>

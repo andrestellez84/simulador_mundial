@@ -1,12 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getFlagUrl } from '../flagMap';
+import { getManualElos, postManualElo } from '../api';
 
-export default function EloAnalytics({ resultData, teamsList = [] }) {
+export default function EloAnalytics({ resultData, teamsList = [], refreshTeams }) {
   const [selectedTeamsCodes, setSelectedTeamsCodes] = useState(['MEX']);
   const [sortKey, setSortKey] = useState('elo');
   const [sortDir, setSortDir] = useState('desc');
 
   const sortedTeams = [...teamsList].sort((a, b) => a.name.localeCompare(b.name));
+  const [manualElos, setManualElos] = useState({});
+  const [editingElo, setEditingElo] = useState({});
+
+  const fetchManualElos = async () => {
+    try {
+      const data = await getManualElos();
+      setManualElos(data.manual_elos || {});
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    fetchManualElos();
+  }, []);
 
   if (!resultData || !teamsList) {
     return <div style={{ textAlign: 'center', marginTop: '2rem', color: 'var(--text-muted)' }}>No simulation data available.</div>
@@ -58,6 +74,30 @@ export default function EloAnalytics({ resultData, teamsList = [] }) {
   const removeTeam = (code) => {
     if (selectedTeamsCodes.length > 1) {
       setSelectedTeamsCodes(selectedTeamsCodes.filter(c => c !== code));
+    }
+  };
+
+  const handleEloSave = async (code) => {
+    const val = parseFloat(editingElo[code]);
+    if (isNaN(val)) return;
+    try {
+      await postManualElo(code, val);
+      await fetchManualElos();
+      setEditingElo(prev => { const n = {...prev}; delete n[code]; return n; });
+      if (refreshTeams) refreshTeams();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleEloClear = async (code) => {
+    try {
+      await postManualElo(code, null);
+      await fetchManualElos();
+      setEditingElo(prev => { const n = {...prev}; delete n[code]; return n; });
+      if (refreshTeams) refreshTeams();
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -357,7 +397,22 @@ export default function EloAnalytics({ resultData, teamsList = [] }) {
                     <img src={getFlagUrl(d.code)} className="flag-icon" />
                     {d.name}
                   </td>
-                  <td style={{ fontWeight: 'bold' }}>{d.initial.toFixed(1)}</td>
+                  <td style={{ fontWeight: 'bold' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <input 
+                        type="number" 
+                        value={editingElo[d.code] !== undefined ? editingElo[d.code] : d.initial.toFixed(1)} 
+                        onChange={e => setEditingElo(prev => ({...prev, [d.code]: e.target.value}))}
+                        style={{ width: '80px', padding: '0.3rem', background: manualElos[d.code] !== undefined ? 'rgba(239, 68, 68, 0.2)' : 'var(--bg-dark)', color: 'white', border: `1px solid ${manualElos[d.code] !== undefined ? 'var(--danger)' : 'var(--border-color)'}`, borderRadius: '4px' }}
+                      />
+                      {editingElo[d.code] !== undefined && (
+                        <button onClick={() => handleEloSave(d.code)} className="btn" style={{ padding: '0.2rem 0.5rem', background: 'var(--success)' }}>Save</button>
+                      )}
+                      {manualElos[d.code] !== undefined && (
+                        <button onClick={() => handleEloClear(d.code)} className="btn" style={{ padding: '0.2rem 0.5rem', background: 'var(--danger)' }}>Reset</button>
+                      )}
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -6,8 +6,10 @@ from .match_simulator import simulate_match_exact, calculate_lambdas
 from .extra_time import simulate_extra_time, simulate_penalties
 from .elo import update_elo
 from ..data.teams import TEAMS
+from .home_advantage import get_net_hfa
 
 def simulate_knockout_match(
+    match_id: int,
     home_code: str, 
     away_code: str, 
     elo_dict: Dict[str, float],
@@ -27,12 +29,14 @@ def simulate_knockout_match(
     match_tuple = (home_code, away_code)
     match_tuple_rev = (away_code, home_code)
     
+    net_hfa = get_net_hfa(match_id, home_code, away_code)
+    lam_h, lam_a = calculate_lambdas(home_elo, away_elo, kwargs_hfa=net_hfa)
+    
     if match_tuple in live_results:
         g_h, g_a = live_results[match_tuple]
     elif match_tuple_rev in live_results:
         g_a, g_h = live_results[match_tuple_rev]
     else:
-        lam_h, lam_a = calculate_lambdas(home_elo, away_elo, kwargs_hfa=0.0)
         g_h, g_a = simulate_match_exact(lam_h, lam_a)
     
     home_win_penalties = None
@@ -65,10 +69,11 @@ def simulate_knockout_match(
         g_h_eff, g_a_eff = (g_h, g_a + 1) if home_win_penalties is False else (g_h, g_a)
         
     # Update ELO (K=60)
+    net_hfa = get_net_hfa(match_id, home_code, away_code)
     new_home_elo, new_away_elo = update_elo(
         home_elo, away_elo, 
         goals_home=g_h_eff, goals_away=g_a_eff, 
-        hfa=0.0, k=60
+        hfa=net_hfa, k=60
     )
     
     elo_dict[home_code] = new_home_elo
@@ -104,7 +109,7 @@ def simulate_knockout_stage(r32_matches: Dict[int, Tuple[str, str]], elo_dict: D
         opponents_graph[home_code][rnd] = away_code
         opponents_graph[away_code][rnd] = home_code
         
-        winner, loser, elo_dict = simulate_knockout_match(home_code, away_code, elo_dict, live_results)
+        winner, loser, elo_dict = simulate_knockout_match(match_id, home_code, away_code, elo_dict, live_results)
         knockout_matchups[match_id] = (home_code, away_code)
         elo_hist_updates[home_code].append(elo_dict[home_code])
         elo_hist_updates[away_code].append(elo_dict[away_code])
@@ -128,7 +133,7 @@ def simulate_knockout_stage(r32_matches: Dict[int, Tuple[str, str]], elo_dict: D
         opponents_graph[home_code][rnd] = away_code
         opponents_graph[away_code][rnd] = home_code
             
-        winner, loser, elo_dict = simulate_knockout_match(home_code, away_code, elo_dict, live_results)
+        winner, loser, elo_dict = simulate_knockout_match(match_id, home_code, away_code, elo_dict, live_results)
         knockout_matchups[match_id] = (home_code, away_code)
         elo_hist_updates[home_code].append(elo_dict[home_code])
         elo_hist_updates[away_code].append(elo_dict[away_code])

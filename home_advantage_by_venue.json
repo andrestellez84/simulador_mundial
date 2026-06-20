@@ -1,0 +1,460 @@
+{
+  "_metadata": {
+    "description": "Tabla de consulta directa: ventaja local (en puntos ELO) para cada uno de los 48 equipos del Mundial 2026 en cada una de las 16 sedes.",
+    "version": "1.0",
+    "last_updated": "2026-04-21",
+    "usage": "value = data['venues'][<venue_id>]['advantages'][<team_code>]. Siempre devuelve un valor numérico (0 si neutral).",
+    "constants": {
+      "FULL_HOME": 100,
+      "STRONG_DIASPORA": 35,
+      "MILD_DIASPORA": 15,
+      "NEUTRAL": 0
+    },
+    "value_meanings": {
+      "100": "Anfitrión jugando en su propio país",
+      "35": "Apoyo masivo por diáspora muy fuerte; estadio mayoritariamente del equipo",
+      "15": "Apoyo moderado; sección significativa pero no mayoritaria",
+      "0": "Estadio neutral, sin ventaja apreciable"
+    },
+    "all_team_codes": [
+      "ALG", "ARG", "AUS", "AUT", "BEL", "BIH", "BRA", "CAN", "CIV", "COD",
+      "COL", "CPV", "CRO", "CUW", "CZE", "ECU", "EGY", "ENG", "ESP", "FRA",
+      "GER", "GHA", "HAI", "IRN", "IRQ", "JOR", "JPN", "KOR", "KSA", "MAR",
+      "MEX", "NED", "NOR", "NZL", "PAN", "PAR", "POR", "QAT", "RSA", "SCO",
+      "SEN", "SUI", "SWE", "TUN", "TUR", "URU", "USA", "UZB"
+    ]
+  },
+
+  "venues": {
+
+    "atlanta": {
+      "city": "Atlanta",
+      "state_or_province": "Georgia",
+      "country": "USA",
+      "stadium": "Mercedes-Benz Stadium",
+      "fifa_name": "Atlanta Stadium",
+      "notes": {
+        "USA": "Anfitrión en su país.",
+        "KOR": "Atlanta metropolitana (Gwinnett County) tiene la mayor comunidad coreana del Sur de EE.UU. (~51,000) y la 7ª del país; Duluth y Suwanee son hubs coreanos.",
+        "MEX": "Diáspora mexicana significativa en Georgia; comunidad creciente.",
+        "BRA": "Comunidad brasileña presente, especialmente en suburbios de Atlanta (Marietta)."
+      },
+      "advantages": {
+        "ALG": 0, "ARG": 0, "AUS": 0, "AUT": 0, "BEL": 0, "BIH": 0, "BRA": 15,
+        "CAN": 0, "CIV": 0, "COD": 0, "COL": 0, "CPV": 0, "CRO": 0, "CUW": 0,
+        "CZE": 0, "ECU": 0, "EGY": 0, "ENG": 0, "ESP": 0, "FRA": 0, "GER": 0,
+        "GHA": 0, "HAI": 0, "IRN": 0, "IRQ": 0, "JOR": 0, "JPN": 0, "KOR": 35,
+        "KSA": 0, "MAR": 0, "MEX": 15, "NED": 0, "NOR": 0, "NZL": 0, "PAN": 0,
+        "PAR": 0, "POR": 0, "QAT": 0, "RSA": 0, "SCO": 0, "SEN": 0, "SUI": 0,
+        "SWE": 0, "TUN": 0, "TUR": 0, "URU": 0, "USA": 100, "UZB": 0
+      }
+    },
+
+    "boston": {
+      "city": "Boston (Foxborough, MA)",
+      "state_or_province": "Massachusetts",
+      "country": "USA",
+      "stadium": "Gillette Stadium",
+      "fifa_name": "Boston Stadium",
+      "notes": {
+        "USA": "Anfitrión en su país.",
+        "CPV": "Massachusetts alberga ~70,000 caboverdianos, la mayor diáspora del mundo fuera de Cabo Verde; Boston-Brockton-New Bedford concentran al 65% de los caboverdianos de EE.UU.",
+        "POR": "MA y RI tienen la mayor diáspora portuguesa de EE.UU. (Fall River, New Bedford, Cambridge); ~250,000 lusoamericanos en la región.",
+        "BRA": "Massachusetts es la 2ª mayor comunidad brasileña en EE.UU. (~85,000); Framingham es 57% brasileño en algunos census tracts; Boston tiene la 2ª mayor concentración del país.",
+        "HAI": "Boston tiene una de las mayores comunidades haitianas de EE.UU., concentrada en Mattapan/Hyde Park.",
+        "MAR": "Pequeña comunidad marroquí, sobre todo en universidades."
+      },
+      "advantages": {
+        "ALG": 0, "ARG": 0, "AUS": 0, "AUT": 0, "BEL": 0, "BIH": 0, "BRA": 35,
+        "CAN": 0, "CIV": 0, "COD": 0, "COL": 0, "CPV": 35, "CRO": 0, "CUW": 0,
+        "CZE": 0, "ECU": 0, "EGY": 0, "ENG": 0, "ESP": 0, "FRA": 0, "GER": 0,
+        "GHA": 0, "HAI": 15, "IRN": 0, "IRQ": 0, "JOR": 0, "JPN": 0, "KOR": 0,
+        "KSA": 0, "MAR": 0, "MEX": 0, "NED": 0, "NOR": 0, "NZL": 0, "PAN": 0,
+        "PAR": 0, "POR": 35, "QAT": 0, "RSA": 0, "SCO": 0, "SEN": 0, "SUI": 0,
+        "SWE": 0, "TUN": 0, "TUR": 0, "URU": 0, "USA": 100, "UZB": 0
+      }
+    },
+
+    "dallas": {
+      "city": "Dallas (Arlington, TX)",
+      "state_or_province": "Texas",
+      "country": "USA",
+      "stadium": "AT&T Stadium",
+      "fifa_name": "Dallas Stadium",
+      "notes": {
+        "USA": "Anfitrión en su país.",
+        "MEX": "El Metroplex (Dallas-Fort Worth) tiene una de las mayores comunidades mexicanas de EE.UU. (~2 millones de hispanos, mayoría mexicana); el AT&T Stadium ha sido sede recurrente de partidos de la selección mexicana con estadio mayoritariamente verde.",
+        "KOR": "Dallas tiene la 9ª mayor población coreana de EE.UU. (~41,000), concentrada en Carrollton.",
+        "PAR": "Pequeña comunidad paraguaya y latinoamericana en general.",
+        "ARG": "Comunidad argentina pequeña pero presente en DFW.",
+        "COL": "Comunidad colombiana moderada."
+      },
+      "advantages": {
+        "ALG": 0, "ARG": 15, "AUS": 0, "AUT": 0, "BEL": 0, "BIH": 0, "BRA": 0,
+        "CAN": 0, "CIV": 0, "COD": 0, "COL": 15, "CPV": 0, "CRO": 0, "CUW": 0,
+        "CZE": 0, "ECU": 0, "EGY": 0, "ENG": 0, "ESP": 0, "FRA": 0, "GER": 0,
+        "GHA": 0, "HAI": 0, "IRN": 0, "IRQ": 0, "JOR": 0, "JPN": 0, "KOR": 15,
+        "KSA": 0, "MAR": 0, "MEX": 35, "NED": 0, "NOR": 0, "NZL": 0, "PAN": 0,
+        "PAR": 15, "POR": 0, "QAT": 0, "RSA": 0, "SCO": 0, "SEN": 0, "SUI": 0,
+        "SWE": 0, "TUN": 0, "TUR": 0, "URU": 0, "USA": 100, "UZB": 0
+      }
+    },
+
+    "guadalajara": {
+      "city": "Guadalajara (Zapopan)",
+      "state_or_province": "Jalisco",
+      "country": "Mexico",
+      "stadium": "Estadio Akron",
+      "fifa_name": "Estadio Guadalajara",
+      "notes": {
+        "MEX": "Anfitrión en su país; Jalisco es uno de los estados con mayor pasión futbolera en México.",
+        "ARG": "Cantidad considerable de jugadores argentinos en Liga MX; afinidad cultural latinoamericana.",
+        "BRA": "Afinidad latinoamericana general aunque idioma distinto.",
+        "COL": "Diáspora colombiana en Guadalajara y afinidad cultural.",
+        "ECU": "Afinidad cultural latinoamericana.",
+        "PAR": "Afinidad cultural latinoamericana.",
+        "URU": "Afinidad cultural latinoamericana.",
+        "ESP": "Afinidad cultural ibérica/lengua común.",
+        "USA": "Históricamente percibido como rival; sin ventaja, podría considerarse desventaja moderada en la práctica pero codificamos 0."
+      },
+      "advantages": {
+        "ALG": 0, "ARG": 15, "AUS": 0, "AUT": 0, "BEL": 0, "BIH": 0, "BRA": 15,
+        "CAN": 0, "CIV": 0, "COD": 0, "COL": 15, "CPV": 0, "CRO": 0, "CUW": 0,
+        "CZE": 0, "ECU": 15, "EGY": 0, "ENG": 0, "ESP": 15, "FRA": 0, "GER": 0,
+        "GHA": 0, "HAI": 0, "IRN": 0, "IRQ": 0, "JOR": 0, "JPN": 0, "KOR": 0,
+        "KSA": 0, "MAR": 0, "MEX": 100, "NED": 0, "NOR": 0, "NZL": 0, "PAN": 15,
+        "PAR": 15, "POR": 0, "QAT": 0, "RSA": 0, "SCO": 0, "SEN": 0, "SUI": 0,
+        "SWE": 0, "TUN": 0, "TUR": 0, "URU": 15, "USA": 0, "UZB": 0
+      }
+    },
+
+    "houston": {
+      "city": "Houston",
+      "state_or_province": "Texas",
+      "country": "USA",
+      "stadium": "NRG Stadium",
+      "fifa_name": "Houston Stadium",
+      "notes": {
+        "USA": "Anfitrión en su país.",
+        "MEX": "Houston es ~45% hispano (mayoría mexicana); comunidad mexicana enorme y muy futbolera; cualquier partido de México en Houston tiene mayoría verde.",
+        "ARG": "Comunidad argentina pequeña pero creciente.",
+        "COL": "Diáspora colombiana moderada.",
+        "PAR": "Comunidad pequeña."
+      },
+      "advantages": {
+        "ALG": 0, "ARG": 15, "AUS": 0, "AUT": 0, "BEL": 0, "BIH": 0, "BRA": 0,
+        "CAN": 0, "CIV": 0, "COD": 0, "COL": 15, "CPV": 0, "CRO": 0, "CUW": 0,
+        "CZE": 0, "ECU": 0, "EGY": 0, "ENG": 0, "ESP": 0, "FRA": 0, "GER": 0,
+        "GHA": 0, "HAI": 0, "IRN": 0, "IRQ": 0, "JOR": 0, "JPN": 0, "KOR": 0,
+        "KSA": 0, "MAR": 0, "MEX": 35, "NED": 0, "NOR": 0, "NZL": 0, "PAN": 0,
+        "PAR": 15, "POR": 0, "QAT": 0, "RSA": 0, "SCO": 0, "SEN": 0, "SUI": 0,
+        "SWE": 0, "TUN": 0, "TUR": 0, "URU": 0, "USA": 100, "UZB": 0
+      }
+    },
+
+    "kansas_city": {
+      "city": "Kansas City",
+      "state_or_province": "Missouri",
+      "country": "USA",
+      "stadium": "GEHA Field at Arrowhead Stadium",
+      "fifa_name": "Kansas City Stadium",
+      "notes": {
+        "USA": "Anfitrión en su país.",
+        "MEX": "Diáspora mexicana moderada en KC; KC históricamente tiene partidos amistosos del Tri.",
+        "BIH": "St. Louis (a ~4 horas) tiene la mayor comunidad bosnia de EE.UU. (~70,000); KC recibe parte de esa hinchada en partidos importantes."
+      },
+      "advantages": {
+        "ALG": 0, "ARG": 0, "AUS": 0, "AUT": 0, "BEL": 0, "BIH": 15, "BRA": 0,
+        "CAN": 0, "CIV": 0, "COD": 0, "COL": 0, "CPV": 0, "CRO": 0, "CUW": 0,
+        "CZE": 0, "ECU": 0, "EGY": 0, "ENG": 0, "ESP": 0, "FRA": 0, "GER": 0,
+        "GHA": 0, "HAI": 0, "IRN": 0, "IRQ": 0, "JOR": 0, "JPN": 0, "KOR": 0,
+        "KSA": 0, "MAR": 0, "MEX": 15, "NED": 0, "NOR": 0, "NZL": 0, "PAN": 0,
+        "PAR": 0, "POR": 0, "QAT": 0, "RSA": 0, "SCO": 0, "SEN": 0, "SUI": 0,
+        "SWE": 0, "TUN": 0, "TUR": 0, "URU": 0, "USA": 100, "UZB": 0
+      }
+    },
+
+    "los_angeles": {
+      "city": "Los Angeles (Inglewood, CA)",
+      "state_or_province": "California",
+      "country": "USA",
+      "stadium": "SoFi Stadium",
+      "fifa_name": "Los Angeles Stadium",
+      "notes": {
+        "USA": "Anfitrión en su país.",
+        "MEX": "LA es la ciudad con mayor población mexicana fuera de México (~3.5M); Rose Bowl/SoFi son virtualmente locales para el Tri; cuando México juega en LA es uniformemente verde.",
+        "KOR": "Koreatown LA es la mayor concentración coreana fuera de Corea (Greater LA: 326,000 según Pew); enorme apoyo organizado.",
+        "JPN": "Little Tokyo y comunidad japonesa-americana histórica en CA; ~110,000 en Greater LA.",
+        "IRN": "Tehrangeles es la mayor diáspora iraní del mundo (~500,000-700,000 estimado); SIN EMBARGO el apoyo a la selección es ambivalente porque gran parte es comunidad pre-revolucionaria que rechaza al régimen actual; codificamos 15 (no 35) por la división política.",
+        "ARG": "Comunidad argentina pequeña; afinidad latina.",
+        "BRA": "Comunidad brasileña presente.",
+        "COL": "Diáspora colombiana moderada.",
+        "ECU": "Comunidad ecuatoriana en LA.",
+        "ESP": "Apoyo cultural hispano amplio.",
+        "PAR": "Afinidad latinoamericana.",
+        "URU": "Afinidad latinoamericana."
+      },
+      "advantages": {
+        "ALG": 0, "ARG": 15, "AUS": 0, "AUT": 0, "BEL": 0, "BIH": 0, "BRA": 15,
+        "CAN": 0, "CIV": 0, "COD": 0, "COL": 15, "CPV": 0, "CRO": 0, "CUW": 0,
+        "CZE": 0, "ECU": 15, "EGY": 0, "ENG": 0, "ESP": 15, "FRA": 0, "GER": 0,
+        "GHA": 0, "HAI": 0, "IRN": 15, "IRQ": 0, "JOR": 0, "JPN": 15, "KOR": 35,
+        "KSA": 0, "MAR": 0, "MEX": 35, "NED": 0, "NOR": 0, "NZL": 0, "PAN": 0,
+        "PAR": 15, "POR": 0, "QAT": 0, "RSA": 0, "SCO": 0, "SEN": 0, "SUI": 0,
+        "SWE": 0, "TUN": 0, "TUR": 0, "URU": 15, "USA": 100, "UZB": 0
+      }
+    },
+
+    "mexico_city": {
+      "city": "Mexico City",
+      "state_or_province": "CDMX",
+      "country": "Mexico",
+      "stadium": "Estadio Banorte (Estadio Azteca)",
+      "fifa_name": "Estadio Azteca",
+      "notes": {
+        "MEX": "Anfitrión en su país; Azteca es uno de los estadios más intimidantes del mundo y juega a 2,240 m de altitud.",
+        "ARG": "Gran comunidad argentina en CDMX y afinidad cultural.",
+        "BRA": "Afinidad latinoamericana.",
+        "COL": "Comunidad colombiana en CDMX y afinidad cultural.",
+        "ECU": "Afinidad cultural latinoamericana.",
+        "PAR": "Afinidad cultural latinoamericana.",
+        "URU": "Afinidad cultural latinoamericana.",
+        "PAN": "Afinidad CONCACAF/latinoamericana.",
+        "ESP": "Afinidad cultural ibérica/idioma común.",
+        "USA": "Rivalidad histórica en CDMX; codificamos 0 (en la práctica enfrentaría hostilidad)."
+      },
+      "advantages": {
+        "ALG": 0, "ARG": 15, "AUS": 0, "AUT": 0, "BEL": 0, "BIH": 0, "BRA": 15,
+        "CAN": 0, "CIV": 0, "COD": 0, "COL": 15, "CPV": 0, "CRO": 0, "CUW": 0,
+        "CZE": 0, "ECU": 15, "EGY": 0, "ENG": 0, "ESP": 15, "FRA": 0, "GER": 0,
+        "GHA": 0, "HAI": 0, "IRN": 0, "IRQ": 0, "JOR": 0, "JPN": 0, "KOR": 0,
+        "KSA": 0, "MAR": 0, "MEX": 100, "NED": 0, "NOR": 0, "NZL": 0, "PAN": 15,
+        "PAR": 15, "POR": 0, "QAT": 0, "RSA": 0, "SCO": 0, "SEN": 0, "SUI": 0,
+        "SWE": 0, "TUN": 0, "TUR": 0, "URU": 15, "USA": 0, "UZB": 0
+      }
+    },
+
+    "miami": {
+      "city": "Miami (Miami Gardens, FL)",
+      "state_or_province": "Florida",
+      "country": "USA",
+      "stadium": "Hard Rock Stadium",
+      "fifa_name": "Miami Stadium",
+      "notes": {
+        "USA": "Anfitrión en su país.",
+        "ARG": "Doral (Miami) tiene la mayor concentración argentina de EE.UU.; existe el apodo 'Doralzuela'/Pequeña Buenos Aires; partidos de Argentina en Miami son virtualmente locales.",
+        "BRA": "Florida tiene la mayor diáspora brasileña en EE.UU. (>200,000 en Greater Miami).",
+        "COL": "Miami-Dade County tiene la mayor población colombiana de EE.UU. (~190,000).",
+        "HAI": "Little Haiti en Miami es el mayor enclave haitiano de EE.UU. (~80,000 en Miami-Dade).",
+        "URU": "Comunidad uruguaya significativa en Miami; afinidad rioplatense.",
+        "PAR": "Comunidad paraguaya presente; afinidad latinoamericana.",
+        "ECU": "Diáspora ecuatoriana moderada.",
+        "CUW": "Cercanía geográfica y comunidad caribeña en Miami.",
+        "PAN": "Comunidad panameña presente.",
+        "ESP": "Comunidad hispana mayoritaria; afinidad cultural."
+      },
+      "advantages": {
+        "ALG": 0, "ARG": 35, "AUS": 0, "AUT": 0, "BEL": 0, "BIH": 0, "BRA": 35,
+        "CAN": 0, "CIV": 0, "COD": 0, "COL": 35, "CPV": 0, "CRO": 0, "CUW": 15,
+        "CZE": 0, "ECU": 15, "EGY": 0, "ENG": 0, "ESP": 15, "FRA": 0, "GER": 0,
+        "GHA": 0, "HAI": 35, "IRN": 0, "IRQ": 0, "JOR": 0, "JPN": 0, "KOR": 0,
+        "KSA": 0, "MAR": 0, "MEX": 0, "NED": 0, "NOR": 0, "NZL": 0, "PAN": 15,
+        "PAR": 15, "POR": 0, "QAT": 0, "RSA": 0, "SCO": 0, "SEN": 0, "SUI": 0,
+        "SWE": 0, "TUN": 0, "TUR": 0, "URU": 15, "USA": 100, "UZB": 0
+      }
+    },
+
+    "monterrey": {
+      "city": "Monterrey (Guadalupe)",
+      "state_or_province": "Nuevo León",
+      "country": "Mexico",
+      "stadium": "Estadio BBVA",
+      "fifa_name": "Estadio Monterrey",
+      "notes": {
+        "MEX": "Anfitrión en su país.",
+        "ARG": "Afinidad cultural latinoamericana; jugadores argentinos en Liga MX.",
+        "BRA": "Afinidad latinoamericana.",
+        "COL": "Afinidad cultural latinoamericana.",
+        "ECU": "Afinidad cultural latinoamericana.",
+        "PAR": "Afinidad cultural latinoamericana.",
+        "URU": "Afinidad cultural latinoamericana.",
+        "PAN": "Afinidad CONCACAF/latinoamericana.",
+        "ESP": "Afinidad ibérica/idioma común.",
+        "USA": "Cercanía geográfica con Texas pero rivalidad histórica; sin ventaja."
+      },
+      "advantages": {
+        "ALG": 0, "ARG": 15, "AUS": 0, "AUT": 0, "BEL": 0, "BIH": 0, "BRA": 15,
+        "CAN": 0, "CIV": 0, "COD": 0, "COL": 15, "CPV": 0, "CRO": 0, "CUW": 0,
+        "CZE": 0, "ECU": 15, "EGY": 0, "ENG": 0, "ESP": 15, "FRA": 0, "GER": 0,
+        "GHA": 0, "HAI": 0, "IRN": 0, "IRQ": 0, "JOR": 0, "JPN": 0, "KOR": 0,
+        "KSA": 0, "MAR": 0, "MEX": 100, "NED": 0, "NOR": 0, "NZL": 0, "PAN": 15,
+        "PAR": 15, "POR": 0, "QAT": 0, "RSA": 0, "SCO": 0, "SEN": 0, "SUI": 0,
+        "SWE": 0, "TUN": 0, "TUR": 0, "URU": 15, "USA": 0, "UZB": 0
+      }
+    },
+
+    "new_york_new_jersey": {
+      "city": "New York/New Jersey (East Rutherford, NJ)",
+      "state_or_province": "New Jersey",
+      "country": "USA",
+      "stadium": "MetLife Stadium",
+      "fifa_name": "New York/New Jersey Stadium",
+      "is_final_venue": true,
+      "notes": {
+        "USA": "Anfitrión en su país; sede de la Final del 19 de julio.",
+        "ECU": "Queens County (NY) alberga la mayor población ecuatoriana de EE.UU.; ~200,000 en NYC; East Newark (NJ) también tiene comunidad enorme; Jackson Heights/Corona son enclaves.",
+        "COL": "Comunidad colombiana grande en NYC y Bergen/Hudson County NJ (~500,000 en área metropolitana).",
+        "BRA": "East Newark/Newark tienen una de las mayores comunidades brasileñas de EE.UU.",
+        "ARG": "Comunidad argentina presente en NJ y Queens.",
+        "POR": "Newark (Ironbound) es uno de los mayores barrios portugueses de EE.UU.",
+        "EGY": "Astoria (Queens) y Jersey City tienen comunidades egipcias significativas (coptas y musulmanas).",
+        "GHA": "Bronx y NJ tienen comunidades ghanesas y africanas occidentales considerables.",
+        "SEN": "Little Senegal en Harlem (NYC); comunidad senegalesa establecida.",
+        "MAR": "Comunidad marroquí en NYC y NJ.",
+        "BIH": "Comunidad bosnia presente; St. Louis es el centro nacional pero NYC/NJ tiene parte.",
+        "CRO": "Comunidad croata en Astoria (Queens) y NJ.",
+        "PER (no clasificó)": "Para referencia: Paterson NJ es el mayor enclave peruano de EE.UU.",
+        "PAN": "Diáspora panameña en Brooklyn.",
+        "URU": "Comunidad uruguaya pequeña pero presente.",
+        "PAR": "Comunidad paraguaya pequeña."
+      },
+      "advantages": {
+        "ALG": 0, "ARG": 15, "AUS": 0, "AUT": 0, "BEL": 0, "BIH": 15, "BRA": 15,
+        "CAN": 0, "CIV": 0, "COD": 0, "COL": 15, "CPV": 0, "CRO": 15, "CUW": 0,
+        "CZE": 0, "ECU": 35, "EGY": 15, "ENG": 0, "ESP": 0, "FRA": 0, "GER": 0,
+        "GHA": 15, "HAI": 0, "IRN": 0, "IRQ": 0, "JOR": 0, "JPN": 0, "KOR": 15,
+        "KSA": 0, "MAR": 15, "MEX": 0, "NED": 0, "NOR": 0, "NZL": 0, "PAN": 15,
+        "PAR": 0, "POR": 15, "QAT": 0, "RSA": 0, "SCO": 0, "SEN": 15, "SUI": 0,
+        "SWE": 0, "TUN": 0, "TUR": 0, "URU": 15, "USA": 100, "UZB": 0
+      }
+    },
+
+    "philadelphia": {
+      "city": "Philadelphia",
+      "state_or_province": "Pennsylvania",
+      "country": "USA",
+      "stadium": "Lincoln Financial Field",
+      "fifa_name": "Philadelphia Stadium",
+      "notes": {
+        "USA": "Anfitrión en su país.",
+        "MEX": "Diáspora mexicana moderada en PA, especialmente sur de Filadelfia.",
+        "EGY": "Filadelfia tiene una comunidad copta egipcia significativa.",
+        "POR": "Comunidad portuguesa moderada.",
+        "GHA": "Comunidad ghanesa-americana en el área metropolitana."
+      },
+      "advantages": {
+        "ALG": 0, "ARG": 0, "AUS": 0, "AUT": 0, "BEL": 0, "BIH": 0, "BRA": 0,
+        "CAN": 0, "CIV": 0, "COD": 0, "COL": 0, "CPV": 0, "CRO": 0, "CUW": 0,
+        "CZE": 0, "ECU": 0, "EGY": 15, "ENG": 0, "ESP": 0, "FRA": 0, "GER": 0,
+        "GHA": 15, "HAI": 0, "IRN": 0, "IRQ": 0, "JOR": 0, "JPN": 0, "KOR": 0,
+        "KSA": 0, "MAR": 0, "MEX": 15, "NED": 0, "NOR": 0, "NZL": 0, "PAN": 0,
+        "PAR": 0, "POR": 15, "QAT": 0, "RSA": 0, "SCO": 0, "SEN": 0, "SUI": 0,
+        "SWE": 0, "TUN": 0, "TUR": 0, "URU": 0, "USA": 100, "UZB": 0
+      }
+    },
+
+    "san_francisco_bay": {
+      "city": "San Francisco Bay Area (Santa Clara, CA)",
+      "state_or_province": "California",
+      "country": "USA",
+      "stadium": "Levi's Stadium",
+      "fifa_name": "San Francisco Bay Area Stadium",
+      "notes": {
+        "USA": "Anfitrión en su país.",
+        "MEX": "California tiene la mayor población mexicana de EE.UU.; el Bay Area tiene comunidad mexicana enorme aunque proporcionalmente menor que LA o el Valle Central.",
+        "JPN": "Japantown SF y comunidad japonesa-americana histórica en el Bay Area.",
+        "KOR": "San Jose tiene la 10ª mayor población coreana de EE.UU. (~36,000).",
+        "POR": "San Jose tiene comunidad portuguesa histórica (Five Wounds neighborhood)."
+      },
+      "advantages": {
+        "ALG": 0, "ARG": 0, "AUS": 0, "AUT": 0, "BEL": 0, "BIH": 0, "BRA": 0,
+        "CAN": 0, "CIV": 0, "COD": 0, "COL": 0, "CPV": 0, "CRO": 0, "CUW": 0,
+        "CZE": 0, "ECU": 0, "EGY": 0, "ENG": 0, "ESP": 0, "FRA": 0, "GER": 0,
+        "GHA": 0, "HAI": 0, "IRN": 0, "IRQ": 0, "JOR": 0, "JPN": 15, "KOR": 15,
+        "KSA": 0, "MAR": 0, "MEX": 15, "NED": 0, "NOR": 0, "NZL": 0, "PAN": 0,
+        "PAR": 0, "POR": 15, "QAT": 0, "RSA": 0, "SCO": 0, "SEN": 0, "SUI": 0,
+        "SWE": 0, "TUN": 0, "TUR": 0, "URU": 0, "USA": 100, "UZB": 0
+      }
+    },
+
+    "seattle": {
+      "city": "Seattle",
+      "state_or_province": "Washington",
+      "country": "USA",
+      "stadium": "Lumen Field",
+      "fifa_name": "Seattle Stadium",
+      "notes": {
+        "USA": "Anfitrión en su país.",
+        "JPN": "Seattle tiene una comunidad japonesa-americana histórica (Nihonmachi/International District); Sounders FC tiene fuerte cultura asiática.",
+        "MEX": "Diáspora mexicana significativa en Washington (estado).",
+        "KOR": "Seattle tiene la 4ª mayor pob coreana de EE.UU. (~67,000).",
+        "NOR": "Pequeña comunidad escandinava histórica en el Pacífico Noroeste (Ballard); minoritaria.",
+        "SWE": "Igual que Noruega: comunidad escandinava histórica pequeña."
+      },
+      "advantages": {
+        "ALG": 0, "ARG": 0, "AUS": 0, "AUT": 0, "BEL": 0, "BIH": 0, "BRA": 0,
+        "CAN": 0, "CIV": 0, "COD": 0, "COL": 0, "CPV": 0, "CRO": 0, "CUW": 0,
+        "CZE": 0, "ECU": 0, "EGY": 0, "ENG": 0, "ESP": 0, "FRA": 0, "GER": 0,
+        "GHA": 0, "HAI": 0, "IRN": 0, "IRQ": 0, "JOR": 0, "JPN": 15, "KOR": 15,
+        "KSA": 0, "MAR": 0, "MEX": 15, "NED": 0, "NOR": 15, "NZL": 0, "PAN": 0,
+        "PAR": 0, "POR": 0, "QAT": 0, "RSA": 0, "SCO": 0, "SEN": 0, "SUI": 0,
+        "SWE": 15, "TUN": 0, "TUR": 0, "URU": 0, "USA": 100, "UZB": 0
+      }
+    },
+
+    "toronto": {
+      "city": "Toronto",
+      "state_or_province": "Ontario",
+      "country": "Canada",
+      "stadium": "BMO Field",
+      "fifa_name": "Toronto Stadium",
+      "notes": {
+        "CAN": "Anfitrión en su país.",
+        "POR": "GTA (Greater Toronto Area) tiene la mayor diáspora portuguesa de Canadá (~170,000); barrios Little Portugal en Dundas/Ossington.",
+        "CRO": "Toronto y Mississauga tienen una de las mayores comunidades croatas de Norteamérica.",
+        "BIH": "Comunidad bosnia notable en Etobicoke y Hamilton.",
+        "ENG": "Toronto es anglófona y Canadá tiene fuerte herencia británica; comunidad inglesa significativa.",
+        "SCO": "Diáspora escocesa histórica en Canadá.",
+        "GHA": "Comunidad ghanesa en GTA.",
+        "MAR": "Comunidad marroquí presente.",
+        "BRA": "Comunidad brasileña en Toronto."
+      },
+      "advantages": {
+        "ALG": 0, "ARG": 0, "AUS": 0, "AUT": 0, "BEL": 0, "BIH": 15, "BRA": 0,
+        "CAN": 100, "CIV": 0, "COD": 0, "COL": 0, "CPV": 0, "CRO": 15, "CUW": 0,
+        "CZE": 0, "ECU": 0, "EGY": 0, "ENG": 15, "ESP": 0, "FRA": 0, "GER": 0,
+        "GHA": 15, "HAI": 0, "IRN": 0, "IRQ": 0, "JOR": 0, "JPN": 0, "KOR": 0,
+        "KSA": 0, "MAR": 0, "MEX": 0, "NED": 0, "NOR": 0, "NZL": 0, "PAN": 0,
+        "PAR": 0, "POR": 15, "QAT": 0, "RSA": 0, "SCO": 15, "SEN": 0, "SUI": 0,
+        "SWE": 0, "TUN": 0, "TUR": 0, "URU": 0, "USA": 0, "UZB": 0
+      }
+    },
+
+    "vancouver": {
+      "city": "Vancouver",
+      "state_or_province": "British Columbia",
+      "country": "Canada",
+      "stadium": "BC Place",
+      "fifa_name": "BC Place Vancouver",
+      "notes": {
+        "CAN": "Anfitrión en su país.",
+        "IRN": "North Vancouver y West Vancouver tienen una de las mayores comunidades iraníes de Norteamérica (~80,000 en Greater Vancouver, conocida como 'Tehranto del oeste'). A diferencia de LA, esta diáspora es más reciente y mixta políticamente; codificamos 35 por concentración geográfica.",
+        "JPN": "Comunidad japonesa-canadiense histórica (incluso post-internamiento).",
+        "KOR": "Comunidad coreana significativa en Coquitlam y Vancouver Norte.",
+        "ENG": "Herencia británica fuerte en Columbia Británica.",
+        "AUS": "Por lazos commonwealth y comunidad anglófona, ligero apoyo.",
+        "CRO": "Pequeña comunidad croata."
+      },
+      "advantages": {
+        "ALG": 0, "ARG": 0, "AUS": 15, "AUT": 0, "BEL": 0, "BIH": 0, "BRA": 0,
+        "CAN": 100, "CIV": 0, "COD": 0, "COL": 0, "CPV": 0, "CRO": 0, "CUW": 0,
+        "CZE": 0, "ECU": 0, "EGY": 0, "ENG": 15, "ESP": 0, "FRA": 0, "GER": 0,
+        "GHA": 0, "HAI": 0, "IRN": 35, "IRQ": 0, "JOR": 0, "JPN": 15, "KOR": 15,
+        "KSA": 0, "MAR": 0, "MEX": 0, "NED": 0, "NOR": 0, "NZL": 0, "PAN": 0,
+        "PAR": 0, "POR": 0, "QAT": 0, "RSA": 0, "SCO": 15, "SEN": 0, "SUI": 0,
+        "SWE": 0, "TUN": 0, "TUR": 0, "URU": 0, "USA": 0, "UZB": 0
+      }
+    }
+
+  }
+}

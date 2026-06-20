@@ -59,3 +59,47 @@ export async function postSyncLiveResults() {
   if (!res.ok) throw new Error('API Error');
   return await res.json();
 }
+
+export async function getHistoryList() {
+  const res = await fetch(`${API_URL}/history/`);
+  if (!res.ok) throw new Error('API Error');
+  return await res.json();
+}
+
+export async function getHistorySnapshot(snapshotId) {
+  const res = await fetch(`${API_URL}/history/${snapshotId}`);
+  if (!res.ok) throw new Error('API Error');
+  return await res.json();
+}
+
+export async function getInPlayTrajectory(homeCode, awayCode, homeGoalMinutes, awayGoalMinutes, currentMinute) {
+  const res = await fetch(`${API_URL}/inplay/trajectory`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      home_code: homeCode,
+      away_code: awayCode,
+      home_goal_minutes: homeGoalMinutes,
+      away_goal_minutes: awayGoalMinutes,
+      current_minute: currentMinute
+    })
+  });
+  if (!res.ok) throw new Error('API Error');
+  return await res.json();
+}
+
+export async function getManualElos() {
+  const response = await fetch(`${API_URL}/teams/manual_elo`);
+  if (!response.ok) throw new Error('API Error');
+  return response.json();
+}
+
+export async function postManualElo(teamCode, elo) {
+  const response = await fetch(`${API_URL}/teams/manual_elo`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ team_code: teamCode, elo: elo })
+  });
+  if (!response.ok) throw new Error('API Error');
+  return response.json();
+}

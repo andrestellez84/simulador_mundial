@@ -2,14 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { getSchedule, getLiveResults, postLiveResult, postSyncLiveResults } from '../api';
 import { getFlagUrl } from '../flagMap';
 
-export default function Schedule() {
+export default function Schedule({ onDataChange }) {
   const [matches, setMatches] = useState([]);
   const [liveResults, setLiveResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hoveredMatch, setHoveredMatch] = useState(null);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // States para inputs [match_id] -> { gh, ga }
   const [inputs, setInputs] = useState({});
+  const [activeTab, setActiveTab] = useState('editor');
 
   useEffect(() => {
     fetchData();
@@ -42,6 +44,7 @@ export default function Schedule() {
     if (!val || val.gh === '' || val.ga === '' || val.gh === undefined || val.ga === undefined) return;
     
     await postLiveResult(home, away, parseInt(val.gh), parseInt(val.ga));
+    if (onDataChange) onDataChange();
     fetchData();
   };
 
@@ -52,13 +55,20 @@ export default function Schedule() {
         delete newInputs[matchId];
         return newInputs;
     });
+    if (onDataChange) onDataChange();
     fetchData();
   };
 
   const handleSync = async () => {
-    const res = await postSyncLiveResults();
-    alert(res.message);
-    fetchData();
+    setIsSyncing(true);
+    try {
+      const res = await postSyncLiveResults();
+      if (onDataChange) onDataChange();
+      await fetchData();
+      alert(res.message);
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   const updateInput = (matchId, key, value) => {
@@ -81,17 +91,41 @@ export default function Schedule() {
            <h2 style={{ color: 'var(--accent)' }}>Live Match Center (All 104 Matches)</h2>
            <p style={{ color: 'var(--text-muted)' }}>Inject real-life scores into the simulation paths.</p>
         </div>
-        <button className="btn" onClick={handleSync} style={{ background: 'var(--accent)' }}>
-          Live Web Scrape (Auto Update)
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+          <button className="btn" onClick={handleSync} disabled={isSyncing} style={{ background: 'var(--accent)', minWidth: '220px', position: 'relative', overflow: 'hidden' }}>
+            {isSyncing ? 'Scraping Eloratings...' : 'Live Web Scrape (Auto Update)'}
+            {isSyncing && (
+              <div style={{ position: 'absolute', bottom: 0, left: 0, height: '3px', background: 'white', width: '100%', animation: 'loading-bar 1.5s infinite linear' }}></div>
+            )}
+          </button>
+          {isSyncing && <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>This takes ~5 seconds...</span>}
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
+        <button 
+          className="btn" 
+          onClick={() => setActiveTab('editor')} 
+          style={{ background: activeTab === 'editor' ? 'var(--accent)' : 'var(--bg-dark)', opacity: activeTab === 'editor' ? 1 : 0.7 }}
+        >
+          Match Editor
+        </button>
+        <button 
+          className="btn" 
+          onClick={() => setActiveTab('surprise')} 
+          style={{ background: activeTab === 'surprise' ? 'var(--accent)' : 'var(--bg-dark)', opacity: activeTab === 'surprise' ? 1 : 0.7 }}
+        >
+          Ranking de Sorpresas
         </button>
       </div>
 
+      {activeTab === 'editor' ? (
       <div className="glass-card" style={{ overflowX: 'auto' }}>
         <table className="custom-table" style={{ width: '100%', minWidth: '700px' }}>
           <thead>
             <tr>
               <th style={{ width: '80px' }}>Match #</th>
-              <th>Date</th>
+              <th>Date & Venue</th>
               <th>Stage</th>
               <th style={{ textAlign: 'right', width: '25%' }}>Home</th>
               <th style={{ textAlign: 'center', width: '120px' }}>Score</th>
@@ -106,6 +140,7 @@ export default function Schedule() {
                 <td>
                    <div style={{ fontWeight: 'bold' }}>{m.date}</div>
                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{m.time}</div>
+                   <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.2rem' }}>{m.venue}</div>
                 </td>
                 <td>
                    <span style={{ padding: '0.2rem 0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', fontSize: '0.8rem' }}>
@@ -208,6 +243,50 @@ export default function Schedule() {
           </tbody>
         </table>
       </div>
+      ) : (
+        <div className="glass-card" style={{ overflowX: 'auto' }}>
+          <h3 style={{ marginBottom: '1rem', color: 'var(--text-main)' }}>Ranking Histórico de Sorpresas</h3>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+            Partidos ordenados del resultado más sorpresivo al más predecible según las expectativas pre-partido.
+          </p>
+          <table className="custom-table" style={{ width: '100%' }}>
+            <thead>
+              <tr>
+                <th style={{ width: '50px', textAlign: 'center' }}>#</th>
+                <th>Partido</th>
+                <th>Marcador</th>
+                <th>Índice Sorpresa</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(() => {
+                const results = matches.filter(m => m.result).sort((a, b) => b.result.surprise - a.result.surprise);
+                if (results.length === 0) return <tr><td colSpan="4" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem' }}>No hay partidos con resultado oficial. Ingresa un resultado en el Match Editor para ver datos.</td></tr>;
+                return results.map((m, idx) => {
+                  return (
+                    <tr key={m.id}>
+                      <td style={{ textAlign: 'center', color: 'var(--text-muted)' }}>{idx + 1}</td>
+                      <td className="team-cell">
+                        <img src={getFlagUrl(m.home)} className="flag-icon" style={{ width: 16, height: 12, marginRight: 8 }} />
+                        {m.home_name !== "-" ? m.home_name : m.home} vs {m.away_name !== "-" ? m.away_name : m.away}
+                        <img src={getFlagUrl(m.away)} className="flag-icon" style={{ width: 16, height: 12, marginLeft: 8 }} />
+                      </td>
+                      <td style={{ fontWeight: 'bold', fontSize: '1.1rem', color: 'var(--accent)' }}>{m.result.gh} - {m.result.ga}</td>
+                      <td style={{ 
+                        fontWeight: 'bold', 
+                        fontSize: '1.1rem',
+                        color: m.result.surprise > 0.7 ? '#ef4444' : m.result.surprise > 0.4 ? '#fbbf24' : 'var(--text-muted)' 
+                      }}>
+                        {(m.result.surprise * 100).toFixed(1)}%
+                      </td>
+                    </tr>
+                  );
+                });
+              })()}
+            </tbody>
+          </table>
+        </div>
+      )}
 
     </div>
   );

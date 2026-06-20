@@ -82,8 +82,8 @@ def aggregate_tournament_results(results: List[TournamentResult], n_sims: int) -
         
         # Aggregation del bracket
         for match_id, (home, away) in res.knockout_matchups.items():
-            # Standardize order so A vs B is same as B vs A statistically
-            pair = tuple(sorted([home, away]))
+            # Keep original home/away order for R32 to preserve bracket slot associations
+            pair = (home, away)
             matchups_counter[match_id][pair] += 1
         
         for code, t_res in res.team_results.items():
@@ -184,10 +184,80 @@ def aggregate_tournament_results(results: List[TournamentResult], n_sims: int) -
         most_likely_final=top_finals_res
     )
     
-    # Calcular Modal Bracket
-    for match_id in range(73, 105):
-        if matchups_counter[match_id]:
-            most_common_pair = matchups_counter[match_id].most_common(1)[0][0]
-            res.modal_bracket[match_id] = most_common_pair
+    # Calcular Consistent Modal Bracket (Forward-Propagation)
+    from ..core.bracket_builder import build_r32_bracket
+    from ..data.bracket.r16_to_final import BRACKET
+    from ..data.groups import GROUPS
+    
+    # 1. Determinar ganadores y segundos modales por grupo
+    group_winners = {}
+    runners_up = {}
+    third_candidates = []
+    
+    for g_name, g_teams in GROUPS.items():
+        g_codes = [t.code for t in g_teams]
+        # Sort by 1st place probability
+        g_codes.sort(key=lambda c: res.teams[c].group_position_probs["1st"], reverse=True)
+        winner = g_codes[0]
+        group_winners[f"1{g_name}"] = winner
+        
+        # Sort remaining by 2nd place probability
+        rem = [c for c in g_codes if c != winner]
+        rem.sort(key=lambda c: res.teams[c].group_position_probs["2nd"], reverse=True)
+        runner = rem[0]
+        runners_up[f"2{g_name}"] = runner
+        
+        # Third candidates
+        rem2 = [c for c in rem if c != runner]
+        rem2.sort(key=lambda c: res.teams[c].group_position_probs["3rd"], reverse=True)
+        third = rem2[0]
+        third_candidates.append((f"3{g_name}", third))
+        
+    # Sort thirds by advance_to_r32
+    third_candidates.sort(key=lambda x: res.teams[x[1]].advance_to_r32, reverse=True)
+    third_places = {slot: code for slot, code in third_candidates[:8]}
+    
+    # 2. Construir R32
+    r32_matches = build_r32_bracket(group_winners, runners_up, third_places)
+    
+    for m_id, pair in r32_matches.items():
+        res.modal_bracket[m_id] = pair
+        
+    # 3. Propagar R16 -> Final
+    winners = {}
+    
+    def get_advancer(current_pair, target_metric):
+        t1, t2 = current_pair
+        val1 = getattr(res.teams[t1], target_metric)
+        val2 = getattr(res.teams[t2], target_metric)
+        return t1 if val1 > val2 else t2
+
+    for m_id in range(73, 89):
+        winners[m_id] = get_advancer(res.modal_bracket[m_id], "advance_to_r16")
+        
+    for m_id in range(89, 97):
+        w1_id, w2_id = BRACKET[m_id]
+        t1, t2 = winners[w1_id], winners[w2_id]
+        res.modal_bracket[m_id] = (t1, t2)
+        winners[m_id] = get_advancer((t1, t2), "advance_to_qf")
+        
+    for m_id in range(97, 101):
+        w1_id, w2_id = BRACKET[m_id]
+        t1, t2 = winners[w1_id], winners[w2_id]
+        res.modal_bracket[m_id] = (t1, t2)
+        winners[m_id] = get_advancer((t1, t2), "advance_to_sf")
+        
+    for m_id in range(101, 103):
+        w1_id, w2_id = BRACKET[m_id]
+        t1, t2 = winners[w1_id], winners[w2_id]
+        res.modal_bracket[m_id] = (t1, t2)
+        winners[m_id] = get_advancer((t1, t2), "advance_to_final")
+        
+    loser_101 = res.modal_bracket[101][0] if winners[101] == res.modal_bracket[101][1] else res.modal_bracket[101][1]
+    loser_102 = res.modal_bracket[102][0] if winners[102] == res.modal_bracket[102][1] else res.modal_bracket[102][1]
+    res.modal_bracket[103] = (loser_101, loser_102)
+    
+    t1, t2 = winners[101], winners[102]
+    res.modal_bracket[104] = (t1, t2)
             
     return res

@@ -12,6 +12,7 @@ from .group_simulator import rank_group
 from .third_place_ranker import rank_third_places
 from .bracket_builder import build_r32_bracket
 from .knockout import simulate_knockout_stage
+from .home_advantage import get_net_hfa
 
 class WorldCupSimulation:
     """Clase principal orquestadora de un mundial"""
@@ -36,7 +37,7 @@ class WorldCupSimulation:
 
     def simulate(self) -> TournamentResult:
         # 1. Fase de Grupos
-        for group_name, team_h, team_a in GROUP_MATCHES:
+        for i, (group_name, team_h, team_a) in enumerate(GROUP_MATCHES):
             e_h = self.current_elos[team_h.code]
             e_a = self.current_elos[team_a.code]
             
@@ -44,7 +45,9 @@ class WorldCupSimulation:
             if identifier in self.live_results:
                 g_h, g_a = self.live_results[identifier]
             else:
-                lam_h, lam_a = calculate_lambdas(e_h, e_a, kwargs_hfa=0.0)
+                m_id = i + 1
+                net_hfa = get_net_hfa(m_id, team_h.code, team_a.code)
+                lam_h, lam_a = calculate_lambdas(e_h, e_a, kwargs_hfa=net_hfa)
                 g_h, g_a = simulate_match_exact(lam_h, lam_a)
             
             # Update Standings
@@ -70,8 +73,22 @@ class WorldCupSimulation:
                 s_h.draws += 1
                 s_a.draws += 1
                 
+            s_h.h2h_results[team_a.code] = {
+                "goals_for": g_h,
+                "goals_against": g_a,
+                "points": 3 if g_h > g_a else (1 if g_h == g_a else 0)
+            }
+            s_a.h2h_results[team_h.code] = {
+                "goals_for": g_a,
+                "goals_against": g_h,
+                "points": 3 if g_a > g_h else (1 if g_a == g_h else 0)
+            }
+                
             # Update ELO
-            n_e_h, n_e_a = update_elo(e_h, e_a, g_h, g_a)
+            # Recordar que net_hfa se pasa al update de elo para no sobrerreaccionar si un equipo gana siendo super local
+            m_id = i + 1
+            net_hfa = get_net_hfa(m_id, team_h.code, team_a.code)
+            n_e_h, n_e_a = update_elo(e_h, e_a, g_h, g_a, hfa=net_hfa)
             self.current_elos[team_h.code] = n_e_h
             self.current_elos[team_a.code] = n_e_a
             

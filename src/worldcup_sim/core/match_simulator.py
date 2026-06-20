@@ -5,7 +5,6 @@ from typing import Tuple
 
 from ..config import config
 from ..models.team import Team, Venue
-from .home_advantage import home_advantage
 
 def calculate_lambdas(elo_h: float, elo_a: float, kwargs_hfa: float = 0.0) -> Tuple[float, float]:
     """
@@ -50,19 +49,4 @@ def simulate_match_exact(lam_h: float, lam_a: float, rho: float = config.RHO_DIX
         if random.random() < acceptance_prob:
             return int(x), int(y)
 
-def simulate_match(team_h: Team, team_a: Team, venue: Venue, elo_h: float, elo_a: float) -> Tuple[int, int]:
-    """
-    Encapsula toda la lógica para un partido de 90 mins calculando su HFA y Lambdas.
-    """
-    # 1. Calcular HFA total para el local (si tiene). Si el visitante fuese "local" 
-    #    home_advantage daría 0 y habría que restarlo o pasarlo.
-    #    Mejor cálculo diferencial.
-    hfa_h = home_advantage(team_h, team_a, venue)
-    hfa_a = home_advantage(team_a, team_h, venue)
-    
-    net_hfa = hfa_h - hfa_a # En caso de ser en sede neutral ambos tendrían 0
-    
-    lam_h, lam_a = calculate_lambdas(elo_h, elo_a, net_hfa)
-    
-    # Simular marcador 90 mins
-    return simulate_match_exact(lam_h, lam_a)
+
