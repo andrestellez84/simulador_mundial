@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { getFlagUrl } from '../flagMap';
-import { renderProb, getTeamStatusColor, isTeamDefinitiveForStage } from '../utils';
+import { renderProb, getTeamStatusColor, isTeamDefinitiveForStage, isPositionDefined } from '../utils';
 
-export default function Knockouts({ resultData, prevResultData, teamsList }) {
+export default function Knockouts({ resultData, prevResultData, teamsList, actualStandings }) {
   const [selectedTeam, setSelectedTeam] = useState('ARG');
   const [viewMode, setViewMode] = useState('paths'); // paths | bracket
 
@@ -38,8 +38,8 @@ export default function Knockouts({ resultData, prevResultData, teamsList }) {
     if (mId === 87) return isHome ? "1K" : `3${group}`;
     if (mId === 88) return isHome ? "2D" : "2G";
     
-    if (mId === 89) return isHome ? "W73" : "W75";
-    if (mId === 90) return isHome ? "W74" : "W77";
+    if (mId === 89) return isHome ? "W74" : "W77";
+    if (mId === 90) return isHome ? "W73" : "W75";
     if (mId === 91) return isHome ? "W76" : "W78";
     if (mId === 92) return isHome ? "W79" : "W80";
     if (mId === 93) return isHome ? "W83" : "W84";
@@ -59,12 +59,15 @@ export default function Knockouts({ resultData, prevResultData, teamsList }) {
     return "";
   };
   
+  const isGroupStageFinished = Object.values(resultData.teams).every(t => t.advance_to_r32 < 0.001 || t.advance_to_r32 > 0.999);
+  
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       
       {/* Switcher */}
       <div className="glass-card" style={{ display: 'flex', justifyContent: 'center' }}>
         <div style={{ display: 'flex', gap: '0.5rem', background: 'rgba(0,0,0,0.2)', padding: '0.3rem', borderRadius: '0.5rem' }}>
+          <button className="btn" onClick={() => setViewMode('actual')} style={{ padding: '0.5rem 1rem', background: viewMode === 'actual' ? 'var(--accent)' : 'transparent' }}>Actual Bracket</button>
           <button className="btn" onClick={() => setViewMode('paths')} style={{ padding: '0.5rem 1rem', background: viewMode === 'paths' ? 'var(--accent)' : 'transparent' }}>Team Paths</button>
           <button className="btn" onClick={() => setViewMode('bracket')} style={{ padding: '0.5rem 1rem', background: viewMode === 'bracket' ? 'var(--accent)' : 'transparent' }}>Most Likely Bracket</button>
         </div>
@@ -160,7 +163,7 @@ export default function Knockouts({ resultData, prevResultData, teamsList }) {
       ) : (
       <div className="glass-card" style={{ textAlign: 'center', width: '100%', overflow: 'hidden' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h2 style={{ color: 'var(--accent)', margin: 0 }}>Global Modal Bracket</h2>
+          <h2 style={{ color: 'var(--accent)', margin: 0 }}>{viewMode === 'actual' ? 'Actual Bracket' : 'Global Modal Bracket'}</h2>
           <select 
             value={selectedTeam} 
             onChange={e => setSelectedTeam(e.target.value)}
@@ -169,7 +172,11 @@ export default function Knockouts({ resultData, prevResultData, teamsList }) {
             {sortedTeams.map(t => <option key={t.code} value={t.code}>{t.name} ({t.code})</option>)}
           </select>
         </div>
-        <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', textAlign: 'left' }}>El torneo matemáticamente más probable. Selecciona un equipo para trazar su camino.</p>
+        <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', textAlign: 'left' }}>
+          {viewMode === 'actual' 
+             ? 'El cuadro del torneo según las posiciones reales actuales.' 
+             : 'El torneo matemáticamente más probable. Selecciona un equipo para trazar su camino.'}
+        </p>
         
         <div style={{ width: '100%', overflowX: 'auto', padding: '2rem 1rem', background: 'var(--bg-dark)', borderRadius: '1rem', border: '1px solid var(--border-color)', position: 'relative' }}>
           
@@ -181,12 +188,39 @@ export default function Knockouts({ resultData, prevResultData, teamsList }) {
               { title: "SF", matchIds: [101, 102], flexSpace: 8 },
               { title: "Final", matchIds: [104], flexSpace: 16 }
             ].map((stage, colIdx) => (
-               <div key={stage.title} style={{ display: 'flex', flexDirection: 'column', width: '180px', position: 'relative', zIndex: 2 }}>
+               <div key={stage.title} style={{ display: 'flex', flexDirection: 'column', width: '220px', position: 'relative', zIndex: 2 }}>
                   <h4 style={{ color: 'var(--accent)', marginBottom: '2rem', textAlign: 'center', height: '20px' }}>{stage.title}</h4>
                   
                   <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-around', position: 'relative' }}>
                     {stage.matchIds.map((mId, idx) => {
-                       const codes = modalBracket[mId];
+                       let codes = viewMode === 'actual' ? (actualStandings ? actualStandings.r32_bracket[mId] : null) : modalBracket[mId];
+                       
+                       // Si estamos en modo real, sólo mostramos equipos totalmente definidos para esta ronda
+                       if (viewMode === 'actual' && codes) {
+                           let stageName = 'r32';
+                           if (mId > 88) stageName = 'r16';
+                           if (mId > 96) stageName = 'qf';
+                           if (mId > 100) stageName = 'sf';
+                           if (mId > 102) stageName = 'final';
+                           
+                           codes = codes.map((tCode, i) => {
+                               if (!tCode) return "";
+                               const t = resultData.teams[tCode];
+                               if (!t) return "";
+                               
+                               // The away team (index 1) in a wildcard match (M74, 77, 79, 80, 81, 82, 85, 87) is a 3rd place team.
+                               // Only show them if the group stage is fully finished.
+                               if (i === 1 && stageName === 'r32' && [74, 77, 79, 80, 81, 82, 85, 87].includes(mId) && !isGroupStageFinished) {
+                                   return "";
+                               }
+
+                               if (isTeamDefinitiveForStage(tCode, resultData, stageName) && t[`advance_to_${stageName}`] === 1) {
+                                   return tCode;
+                               }
+                               return "";
+                           });
+                       }
+
                        const hInfo = codes ? teamsList.find(t => t.code === codes[0]) : null;
                        const aInfo = codes ? teamsList.find(t => t.code === codes[1]) : null;
                        
@@ -233,11 +267,13 @@ export default function Knockouts({ resultData, prevResultData, teamsList }) {
                                    <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.2 }}>TBD</div>
                                 ) : (
                                    <>
-                                      <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.6rem', position: 'absolute', top: '0.2rem', right: '0.4rem' }}>M{mId}</div>
+                                      <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.6rem', position: 'absolute', top: '0.2rem', right: '0.4rem' }}>
+                                        M{mId} {viewMode === 'actual' && [74, 77, 79, 80, 81, 82, 85, 87].includes(mId) && !isGroupStageFinished ? '(TBC)' : ''}
+                                      </div>
                                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, fontSize: '0.8rem', marginTop: '0.4rem', opacity: codes[0] === selectedTeam ? 1 : (hasSelected ? 0.5 : 1) }}>
                                          <img src={getFlagUrl(codes[0])} style={{ width: 16, height: 12, objectFit: 'cover', borderRadius: 2 }} />
                                          <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '120px', color: codes[0] === selectedTeam ? '#3b82f6' : (getTeamStatusColor(codes[0], resultData, stage.title.toLowerCase()) || 'inherit') }}>
+                                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '170px', color: codes[0] === selectedTeam ? '#3b82f6' : (getTeamStatusColor(codes[0], resultData, stage.title.toLowerCase()) || 'inherit') }}>
                                               {hInfo?.name || codes[0]}
                                               {isTeamDefinitiveForStage(codes[0], resultData, stage.title.toLowerCase()) && <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginLeft: '4px' }}>(DEF)</span>}
                                             </span>
@@ -248,7 +284,7 @@ export default function Knockouts({ resultData, prevResultData, teamsList }) {
                                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, fontSize: '0.8rem', opacity: codes[1] === selectedTeam ? 1 : (hasSelected ? 0.5 : 1) }}>
                                          <img src={getFlagUrl(codes[1])} style={{ width: 16, height: 12, objectFit: 'cover', borderRadius: 2 }} />
                                          <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '120px', color: codes[1] === selectedTeam ? '#3b82f6' : (getTeamStatusColor(codes[1], resultData, stage.title.toLowerCase()) || 'inherit') }}>
+                                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '170px', color: codes[1] === selectedTeam ? '#3b82f6' : (getTeamStatusColor(codes[1], resultData, stage.title.toLowerCase()) || 'inherit') }}>
                                               {aInfo?.name || codes[1]}
                                               {isTeamDefinitiveForStage(codes[1], resultData, stage.title.toLowerCase()) && <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginLeft: '4px' }}>(DEF)</span>}
                                             </span>

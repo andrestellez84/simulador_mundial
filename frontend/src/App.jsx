@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Overview from './components/Overview';
 import Groups from './components/Groups';
 import Knockouts from './components/Knockouts';
@@ -7,7 +7,7 @@ import EloAnalytics from './components/EloAnalytics';
 import Schedule from './components/Schedule';
 import NextMatches from './components/NextMatches';
 import LiveMatchTracker from './components/LiveMatchTracker';
-import { requestSimulation, checkSimulationStatus, getTeams, getHistoryList, getHistorySnapshot } from './api';
+import { requestSimulation, checkSimulationStatus, getTeams, getHistoryList, getHistorySnapshot, deleteHistorySnapshot, getActualStandings } from './api';
 
 function App() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -17,18 +17,48 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [jobId, setJobId] = useState(null);
   const [progress, setProgress] = useState(0);
+  const officialBaselineRef = React.useRef(null);
   const [currentResultData, setCurrentResultData] = useState(null);
   const [prevResultData, setPrevResultData] = useState(null);
+  const [historicalData, setHistoricalData] = useState(null);
+  const [historicalPrevData, setHistoricalPrevData] = useState(null);
   const [configVersion, setConfigVersion] = useState(0);
   const [teamsList, setTeamsList] = useState([]);
   
   const [historyList, setHistoryList] = useState([]);
-  const [historicalData, setHistoricalData] = useState(null);
+  const [actualStandings, setActualStandings] = useState(null);
 
-  const fetchHistory = async () => {
+  const fetchHistory = async (isInitialLoad = false) => {
     try {
       const res = await getHistoryList();
       setHistoryList(res.snapshots);
+      if (res.snapshots.length > 0) {
+          const latest = res.snapshots[0];
+          getHistorySnapshot(latest.id).then(async (data) => {
+              if (isInitialLoad) {
+                  setCurrentResultData(data);
+              }
+              
+              let baselineData = null;
+              for (let i = 1; i < res.snapshots.length; i++) {
+                  try {
+                      const prevData = await getHistorySnapshot(res.snapshots[i].id);
+                      if (prevData._metadata?.hash !== data._metadata?.hash) {
+                          baselineData = prevData;
+                          break;
+                      }
+                  } catch(e) {}
+              }
+              
+              if (baselineData) {
+                  setPrevResultData(baselineData);
+                  officialBaselineRef.current = baselineData;
+              } else {
+                  setPrevResultData(null);
+                  officialBaselineRef.current = data;
+              }
+          }).catch(e => console.error(e));
+      }
     } catch (e) {
       console.error(e);
     }
@@ -37,11 +67,24 @@ function App() {
   const fetchTeamsData = () => {
     getTeams().then(data => setTeamsList(data.teams)).catch(console.error);
   };
+  
+  const fetchActualStandingsData = () => {
+    getActualStandings().then(data => setActualStandings(data)).catch(console.error);
+  };
 
   useEffect(() => {
     fetchTeamsData();
-    fetchHistory();
+    fetchHistory(true);
   }, []);
+
+  useEffect(() => {
+    if (historicalData && historicalData._metadata?.inputs?.live_results) {
+       getActualStandings(historicalData._metadata.inputs.live_results)
+         .then(data => setActualStandings(data)).catch(console.error);
+    } else {
+       getActualStandings().then(data => setActualStandings(data)).catch(console.error);
+    }
+  }, [historicalData]);
 
   useEffect(() => {
     let interval;
@@ -50,22 +93,33 @@ function App() {
         try {
           const res = await checkSimulationStatus(jobId);
           if (res.status === 'completed') {
-            setCurrentResultData(current => {
-              const currentHash = current?._metadata?.hash;
-              const newHash = res.result?._metadata?.hash;
-              
-              if (current && currentHash && newHash && currentHash !== newHash) {
-                // Sólo guardar como base de comparación si tuvo buena convergencia (>= 100k)
-                if (current._metadata && current._metadata.simulations >= 100000) {
-                  setPrevResultData(current);
-                }
-              }
-              return res.result;
-            });
+            try {
+              const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+              const oscillator = audioCtx.createOscillator();
+              const gainNode = audioCtx.createGain();
+              oscillator.connect(gainNode);
+              gainNode.connect(audioCtx.destination);
+              oscillator.type = 'sine';
+              oscillator.frequency.value = 600;
+              gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+              oscillator.start();
+              setTimeout(() => { oscillator.stop(); audioCtx.close(); }, 300);
+            } catch(e) { console.log("Audio not supported"); }
+
+            const newResult = res.result;
+            const newSims = newResult._metadata?.simulations || 0;
+            
+            // Always show arrows against the baseline, regardless of simulation size
+            if (officialBaselineRef.current) {
+                setPrevResultData(officialBaselineRef.current);
+            }
+            
+            setCurrentResultData(newResult);
             setLoading(false);
             setProgress(100);
             clearInterval(interval);
             fetchHistory(); // Refresh history list
+            fetchActualStandingsData(); // Refresh actual standings
           } else if (res.status === 'failed') {
             setLoading(false);
             clearInterval(interval);
@@ -98,20 +152,46 @@ function App() {
   const loadHistorySnapshot = async (id) => {
     if (!id) {
       setHistoricalData(null);
+      setHistoricalPrevData(null);
       return;
     }
     try {
       const data = await getHistorySnapshot(id);
       data._snapshotId = id;
       setHistoricalData(data);
+      // DO NOT overwrite officialBaselineRef.current here! It belongs to the present.
+      
+      const currentIndex = historyList.findIndex(h => h.id === id);
+      if (currentIndex !== -1 && currentIndex + 1 < historyList.length) {
+          const prevId = historyList[currentIndex + 1].id;
+          getHistorySnapshot(prevId).then(prevData => {
+              setHistoricalPrevData(prevData);
+          }).catch(console.error);
+      } else {
+          setHistoricalPrevData(null);
+      }
     } catch (e) {
       console.error(e);
       alert('Failed to load snapshot');
     }
   };
 
+  const handleDeleteSnapshot = async () => {
+    if (!historicalData || !historicalData._snapshotId) return;
+    if (window.confirm("¿Seguro que deseas borrar este historial?")) {
+      try {
+        await deleteHistorySnapshot(historicalData._snapshotId);
+        setHistoricalData(null);
+        fetchHistory();
+      } catch (err) {
+        console.error("Error deleting snapshot", err);
+      }
+    }
+  };
+
   const activeData = historicalData || currentResultData;
-  const activePrevData = historicalData ? null : prevResultData;
+  const activePrevData = historicalData ? historicalPrevData : prevResultData;
+  const activeInputs = historicalData ? historicalData._metadata?.inputs : null;
 
   return (
     <div className="app-container">
@@ -163,16 +243,26 @@ function App() {
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                   
                   {historyList.length > 0 && (
-                    <select 
-                      onChange={e => loadHistorySnapshot(e.target.value)}
-                      value={historicalData ? historicalData._snapshotId || "" : ""}
-                      style={{ padding: '0.5rem', background: 'var(--bg-dark)', color: 'white', border: '1px solid var(--border-color)', borderRadius: '0.5rem' }}
-                    >
-                      <option value="">-- Presente --</option>
-                      {historyList.map(h => (
-                        <option key={h.id} value={h.id}>{h.label}</option>
-                      ))}
-                    </select>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <select 
+                        onChange={e => loadHistorySnapshot(e.target.value)}
+                        value={historicalData ? historicalData._snapshotId || "" : ""}
+                        style={{ padding: '0.5rem', background: 'var(--bg-dark)', color: 'white', border: '1px solid var(--border-color)', borderRadius: '0.5rem' }}
+                      >
+                        <option value="">-- Presente --</option>
+                        {historyList.map(h => (
+                          <option key={h.id} value={h.id}>{h.label}</option>
+                        ))}
+                      </select>
+                      {historicalData && (
+                        <button onClick={handleDeleteSnapshot} className="btn btn-noscale" style={{ background: '#ef4444', padding: '0.4rem 0.6rem', color: 'white' }} title="Borrar Historial">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                            <path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                          </svg>
+                        </button>
+                      )}
+                    </div>
                   )}
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -204,16 +294,17 @@ function App() {
               </div>
             </div>
             
-            <Overview resultData={activeData} prevResultData={activePrevData} teamsList={teamsList} />
+            <Overview resultData={activeData} prevResultData={activePrevData} teamsList={teamsList} actualStandings={actualStandings} />
           </div>
         )}
 
-        {activeTab === 'groups' && <Groups resultData={activeData} prevResultData={activePrevData} teamsList={teamsList} />}
-        {activeTab === 'knockout' && <Knockouts resultData={activeData} prevResultData={activePrevData} teamsList={teamsList} />}
-        {activeTab === 'next' && <NextMatches resultData={activeData} prevResultData={activePrevData} />}
-        {activeTab === 'inplay' && <LiveMatchTracker teamsList={teamsList} />}
-        {activeTab === 'schedule' && <Schedule onDataChange={() => {
+        {activeTab === 'groups' && <Groups resultData={activeData} prevResultData={activePrevData} teamsList={teamsList} actualStandings={actualStandings} activeInputs={activeInputs} />}
+        {activeTab === 'knockout' && <Knockouts resultData={activeData} prevResultData={activePrevData} teamsList={teamsList} actualStandings={actualStandings} />}
+        {activeTab === 'next' && <NextMatches resultData={activeData} prevResultData={activePrevData} teamsList={teamsList} liveResults={activeInputs?.live_results} actualStandings={actualStandings} />}
+        {activeTab === 'inplay' && <LiveMatchTracker teamsList={teamsList} activeInputs={activeInputs} />}
+        {activeTab === 'schedule' && <Schedule activeInputs={activeInputs} resultData={activeData} teamsList={teamsList} actualStandings={actualStandings} onDataChange={() => {
            getTeams().then(data => setTeamsList(data.teams)).catch(console.error);
+           fetchActualStandingsData();
            setConfigVersion(v => v + 1);
         }} />}
         {activeTab === 'elo' && <EloAnalytics resultData={activeData} teamsList={teamsList} refreshTeams={fetchTeamsData} />}

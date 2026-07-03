@@ -49,18 +49,23 @@ def simulation_task(job_id: str, req: SimulateRequest, live_results: dict):
         current_hash = get_config_hash(initial_elos, live_results)
         
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+        serialized_live = {f"{k[0]}-{k[1]}": v for k, v in live_results.items()} if live_results else {}
         dumped["_metadata"] = {
             "timestamp": timestamp,
             "hash": current_hash,
-            "simulations": req.n_simulations
+            "simulations": req.n_simulations,
+            "inputs": {
+                "elos": initial_elos,
+                "live_results": serialized_live
+            }
         }
         
         last_hash = ""
         if HASH_FILE.exists():
             last_hash = HASH_FILE.read_text().strip()
             
-        if current_hash != last_hash and req.n_simulations >= 100000:
-            # Config changed -> save new history snapshot
+        if req.n_simulations >= 100000:
+            # Save new history snapshot for every robust simulation
             snapshot_path = HISTORY_DIR / f"snapshot_{timestamp}.json"
             
             with open(snapshot_path, "w", encoding="utf-8") as f:

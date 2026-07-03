@@ -3,7 +3,18 @@ import { getFlagUrl } from '../flagMap';
 import { getManualElos, postManualElo } from '../api';
 
 export default function EloAnalytics({ resultData, teamsList = [], refreshTeams }) {
-  const [selectedTeamsCodes, setSelectedTeamsCodes] = useState(['MEX']);
+  const [selectedTeamsCodes, setSelectedTeamsCodes] = useState(() => {
+    try {
+      const saved = localStorage.getItem('elo_evolution_selected_teams');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.error("Error loading selected ELO teams from localStorage:", e);
+    }
+    return ['MEX'];
+  });
   const [sortKey, setSortKey] = useState('elo');
   const [sortDir, setSortDir] = useState('desc');
 
@@ -23,6 +34,10 @@ export default function EloAnalytics({ resultData, teamsList = [], refreshTeams 
   useEffect(() => {
     fetchManualElos();
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('elo_evolution_selected_teams', JSON.stringify(selectedTeamsCodes));
+  }, [selectedTeamsCodes]);
 
   if (!resultData || !teamsList) {
     return <div style={{ textAlign: 'center', marginTop: '2rem', color: 'var(--text-muted)' }}>No simulation data available.</div>
@@ -219,17 +234,15 @@ export default function EloAnalytics({ resultData, teamsList = [], refreshTeams 
                   </>
                 );
               })()}
-            </svg>
-            <div style={{ position: 'absolute', bottom: '-20px', left: 0, width: '100%' }}>
               {["Grupos", "R32", "R16", "QF", "SF", "Final", "Champ"].map((lbl, i) => {
-                const xPercent = (((50 + i * ((VIEW_W - 100) / 7))) / VIEW_W) * 100;
+                const groupSpacing = (VIEW_W - 100) / 7;
                 return (
-                  <span key={`elim-lbl-${lbl}`} style={{ position: 'absolute', left: `${xPercent}%`, transform: 'translateX(-50%)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  <text key={`elim-lbl-${lbl}`} x={50 + i * groupSpacing} y={VIEW_H - 15} fill="var(--text-muted)" fontSize="14" textAnchor="middle">
                     {lbl}
-                  </span>
-                )
+                  </text>
+                );
               })}
-            </div>
+            </svg>
           </div>
         </div>
       </div>
@@ -283,17 +296,15 @@ export default function EloAnalytics({ resultData, teamsList = [], refreshTeams 
                   </>
                 );
               })()}
-            </svg>
-            <div style={{ position: 'absolute', bottom: '-20px', left: 0, width: '100%' }}>
               {["R32", "R16", "QF", "SF", "Final", "Champ"].map((lbl, i) => {
-                const xPercent = (((50 + (i / 5) * (VIEW_W - 100))) / VIEW_W) * 100;
+                const getX = (idx) => 50 + (idx / 5) * (VIEW_W - 100);
                 return (
-                  <span key={`surv-lbl-${lbl}`} style={{ position: 'absolute', left: `${xPercent}%`, transform: 'translateX(-50%)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  <text key={`surv-lbl-${lbl}`} x={getX(i)} y={VIEW_H - 15} fill="var(--text-muted)" fontSize="14" textAnchor="middle">
                     {lbl}
-                  </span>
-                )
+                  </text>
+                );
               })}
-            </div>
+            </svg>
           </div>
         </div>
 
@@ -360,18 +371,15 @@ export default function EloAnalytics({ resultData, teamsList = [], refreshTeams 
                     </>
                   );
                 })()}
-              </svg>
-
-              <div style={{ position: 'absolute', bottom: '-20px', left: 0, width: '100%' }}>
                 {["Initial", "M1", "M2", "Groups", "R32", "R16", "QF", "SF", "Final"].map((lbl, i) => {
-                  const xPercent = (((50 + (i / 8) * (VIEW_W - 100))) / VIEW_W) * 100;
+                  const getX = (idx) => 50 + (idx / 8) * (VIEW_W - 100);
                   return (
-                    <span key={lbl} style={{ position: 'absolute', left: `${xPercent}%`, transform: 'translateX(-50%)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    <text key={lbl} x={getX(i)} y={VIEW_H - 15} fill="var(--text-muted)" fontSize="14" textAnchor="middle">
                       {lbl}
-                    </span>
-                  )
+                    </text>
+                  );
                 })}
-              </div>
+              </svg>
             </>
           )}
         </div>

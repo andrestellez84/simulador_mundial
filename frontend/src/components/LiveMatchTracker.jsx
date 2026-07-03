@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getInPlayTrajectory } from '../api';
 import { getFlagUrl } from '../flagMap';
 
-export default function LiveMatchTracker({ teamsList }) {
+export default function LiveMatchTracker({ teamsList, activeInputs }) {
   const [homeCode, setHomeCode] = useState('ARG');
   const [awayCode, setAwayCode] = useState('BRA');
   const [homeGoalMinutes, setHomeGoalMinutes] = useState([]);
@@ -60,6 +60,15 @@ export default function LiveMatchTracker({ teamsList }) {
 
     const drawPoints = chartData.map(d => `${(d.minute / 90) * 100},${100 - (d.p_away + d.p_draw)}`).join(' ');
     drawPolygon = `0,100 ${drawPoints} 100,100`;
+  }
+
+  if (activeInputs) {
+    return (
+      <div className="glass-card" style={{ textAlign: 'center', padding: '3rem' }}>
+         <h2 style={{ color: '#ef4444' }}>Solo Lectura (Viaje en el Tiempo)</h2>
+         <p style={{ color: 'var(--text-muted)' }}>El Live Match Tracker interactivo está deshabilitado mientras visualizas un historial del pasado.</p>
+      </div>
+    );
   }
 
   return (

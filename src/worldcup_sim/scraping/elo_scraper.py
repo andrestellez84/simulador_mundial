@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timezone, timedelta
+from datetime import date, datetime, timezone, timedelta
 import httpx
 from bs4 import BeautifulSoup
 from tenacity import retry, wait_exponential, stop_after_attempt
@@ -151,15 +151,29 @@ def scrape_latest_results() -> dict[tuple[str, str], tuple[int, int]]:
     try:
         response = fetch_latest_results()
     except Exception as e:
-        log.error(f"Error fetching latest results: {e}")
+        log.error(f"Error scraping latest results: {e}")
         return {}
         
     reverse_map = {v: k for k, v in ELO_TSV_MAP.items()}
     results = {}
     
+    wc_start_date = date(2026, 6, 11)
+    
     for line in response.text.split('\n'):
-        parts = line.split('\t')
-        if len(parts) >= 7:
+        parts = line.strip().split('\t')
+        if len(parts) >= 8:
+            # Format: YYYY  MM  DD  HOME  AWAY  GH  GA  TYPE  ...
+            try:
+                match_date = date(int(parts[0]), int(parts[1]), int(parts[2]))
+                if match_date < wc_start_date:
+                    continue
+            except (ValueError, IndexError):
+                continue
+            
+            # Only accept World Cup matches (column 7 = "WC")
+            if parts[7] != "WC":
+                continue
+                
             tsv_home = parts[3]
             tsv_away = parts[4]
             try:
@@ -175,3 +189,4 @@ def scrape_latest_results() -> dict[tuple[str, str], tuple[int, int]]:
                 pass
                 
     return results
+

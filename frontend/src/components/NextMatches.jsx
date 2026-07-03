@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { getSchedule } from '../api';
+import React, { useState, useEffect, useMemo } from 'react';
+import { getSchedule, getPrediction, getLiveResults } from '../api';
 import { getFlagUrl } from '../flagMap';
-import { renderProb, getTeamStatusColor, isPositionDefined } from '../utils';
+import { renderProb, getTeamStatusColor, isPositionDefined, resolveTeamByPosition } from '../utils';
 
-export default function NextMatches({ resultData, prevResultData }) {
+export default function NextMatches({ resultData, prevResultData, teamsList, liveResults: initialLiveResults, actualStandings }) {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -46,9 +46,85 @@ export default function NextMatches({ resultData, prevResultData }) {
     }
   }, [matches, selectedDate, defaultDate]);
 
-  if (loading) return <div style={{ textAlign: 'center', marginTop: '2rem' }}>Loading...</div>;
-
   const targetDate = selectedDate || defaultDate;
+
+  // Add dynamic fetching of predictions for newly resolved knockout matches
+  useEffect(() => {
+    const fetchPredictions = async () => {
+      const lrRes = await getLiveResults();
+      const currentLiveResults = lrRes.live_results || [];
+
+      const displayM = matches.filter(m => m.date === targetDate);
+      let updatedMatches = [...matches];
+      let hasUpdates = false;
+
+      for (let m of displayM) {
+        const isGroup = m.stage.startsWith("Group");
+        let hCode = isGroup ? m.home : (actualStandings?.r32_bracket?.[m.id]?.[0] || null);
+        let aCode = isGroup ? m.away : (actualStandings?.r32_bracket?.[m.id]?.[1] || null);
+
+        // Fetch predictions if we have both teams and no predictions yet
+        if (hCode && aCode && !m.predictions) {
+          try {
+            const pred = await getPrediction(hCode, aCode, m.id);
+            const index = updatedMatches.findIndex(x => x.id === m.id);
+            if (index !== -1) {
+              updatedMatches[index] = {
+                ...updatedMatches[index],
+                predictions: {
+                  p_home: pred.win_prob,
+                  p_draw: pred.draw_prob,
+                  p_away: pred.loss_prob,
+                  top_scores: pred.top_scores,
+                  elo_home: pred.home_elo,
+                  elo_away: pred.away_elo,
+                  extra_elo_home: pred.extra_elo_home,
+                  extra_elo_away: pred.extra_elo_away
+                }
+              };
+              hasUpdates = true;
+            }
+          } catch (e) {
+            console.error(e);
+          }
+        }
+        
+        // SEPARATE BLOCK: Inject live results for resolved knockout matches
+        if (hCode && aCode && !m.result && currentLiveResults.length > 0) {
+          const liveMatch = currentLiveResults.find(res => (res.home === hCode && res.away === aCode) || (res.away === hCode && res.home === aCode));
+          if (liveMatch) {
+            let gh = liveMatch.home === hCode ? liveMatch.gh : liveMatch.ga;
+            let ga = liveMatch.home === hCode ? liveMatch.ga : liveMatch.gh;
+            
+            let surprise = 0;
+            let surpriser = null;
+            const index = updatedMatches.findIndex(x => x.id === m.id);
+            const preds = updatedMatches[index]?.predictions || m.predictions;
+            if (preds) {
+                let p_actual = gh > ga ? preds.p_home : (gh < ga ? preds.p_away : preds.p_draw);
+                surprise = 1.0 - p_actual;
+                surpriser = gh > ga ? hCode : (gh < ga ? aCode : (preds.p_home < preds.p_away ? hCode : aCode));
+            }
+            
+            if (index !== -1) {
+                updatedMatches[index] = {
+                    ...updatedMatches[index],
+                    result: { gh, ga, surprise, surpriser }
+                };
+                hasUpdates = true;
+            }
+          }
+        }
+      }
+
+      if (hasUpdates) {
+        setMatches(updatedMatches);
+      }
+    };
+    fetchPredictions();
+  }, [targetDate, matches, resultData, teamsList, actualStandings]);
+
+  if (loading) return <div style={{ textAlign: 'center', marginTop: '2rem' }}>Loading...</div>;
 
   // Navegación
   const currentIndex = allDates.indexOf(targetDate);
@@ -104,8 +180,34 @@ export default function NextMatches({ resultData, prevResultData }) {
           gap: '1.5rem' 
         }}>
           {displayMatches.map(m => {
-            const champHome = getChampProb(m.home);
-            const champAway = getChampProb(m.away);
+            const isGroup = m.stage.startsWith("Group");
+            let homeCode = isGroup ? m.home : (actualStandings?.r32_bracket?.[m.id]?.[0] || m.home);
+            let awayCode = isGroup ? m.away : (actualStandings?.r32_bracket?.[m.id]?.[1] || m.away);
+
+            const tInfoHome = teamsList?.find(t => t.code === homeCode);
+            const tInfoAway = teamsList?.find(t => t.code === awayCode);
+
+            let homeName = tInfoHome ? tInfoHome.name : (m.home_name !== "-" ? m.home_name : m.home);
+            let awayName = tInfoAway ? tInfoAway.name : (m.away_name !== "-" ? m.away_name : m.away);
+
+            const showHomeFlag = teamsList?.some(t => t.code === homeCode);
+            const showAwayFlag = teamsList?.some(t => t.code === awayCode);
+
+            const champHome = getChampProb(homeCode);
+            const champAway = getChampProb(awayCode);
+
+            const getStageKey = (stageStr) => {
+              if (stageStr.startsWith("Group")) return "r32";
+              if (stageStr === "Round of 32") return "r16";
+              if (stageStr === "Round of 16") return "qf";
+              if (stageStr === "Quarter-Finals") return "sf";
+              if (stageStr === "Semi-Finals") return "final";
+              if (stageStr === "Final") return "champ";
+              return "r32";
+            };
+
+            const homeStatusColor = getTeamStatusColor(homeCode, resultData, getStageKey(m.stage));
+            const awayStatusColor = getTeamStatusColor(awayCode, resultData, getStageKey(m.stage));
 
             return (
               <div key={m.id} className="glass-card" style={{ position: 'relative', overflow: 'hidden' }}>
@@ -121,11 +223,11 @@ export default function NextMatches({ resultData, prevResultData }) {
 
                 {/* Equipos */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                  <div style={{ textAlign: 'center', flex: 1, color: getTeamStatusColor(m.home, resultData) || 'inherit' }}>
-                    {m.home_name !== "-" && <img src={getFlagUrl(m.home)} className="flag-icon" style={{ width: '40px', height: '30px', margin: '0 auto 0.5rem' }} />}
+                  <div style={{ textAlign: 'center', flex: 1, color: homeStatusColor || 'inherit' }}>
+                    {showHomeFlag && <img src={getFlagUrl(homeCode)} className="flag-icon" style={{ width: '40px', height: '30px', margin: '0 auto 0.5rem' }} />}
                     <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
-                      {m.home_name !== "-" ? m.home_name : m.home}
-                      {isPositionDefined(m.home, resultData) && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: '4px' }}>(DEF)</span>}
+                      {homeName}
+                      {homeStatusColor === '#4ade80' && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: '4px' }}>(DEF)</span>}
                     </div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                       ELO: {m.predictions ? Math.round(m.predictions.elo_home) : '-'}
@@ -137,7 +239,7 @@ export default function NextMatches({ resultData, prevResultData }) {
                     </div>
                     {champHome !== null && (
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
-                        Camp: <span style={{ color: 'var(--accent)' }}>{renderProb(champHome, prevResultData?.teams[m.home]?.champion)}</span>
+                        Camp: <span style={{ color: 'var(--accent)' }}>{renderProb(champHome, prevResultData?.teams[homeCode]?.champion)}</span>
                       </div>
                     )}
                   </div>
@@ -170,11 +272,11 @@ export default function NextMatches({ resultData, prevResultData }) {
                       </div>
                     )}
                   </div>
-                  <div style={{ textAlign: 'center', flex: 1, color: getTeamStatusColor(m.away, resultData) || 'inherit' }}>
-                    {m.home_name !== "-" && <img src={getFlagUrl(m.away)} className="flag-icon" style={{ width: '40px', height: '30px', margin: '0 auto 0.5rem' }} />}
+                  <div style={{ textAlign: 'center', flex: 1, color: awayStatusColor || 'inherit' }}>
+                    {showAwayFlag && <img src={getFlagUrl(awayCode)} className="flag-icon" style={{ width: '40px', height: '30px', margin: '0 auto 0.5rem' }} />}
                     <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
-                      {m.away_name !== "-" ? m.away_name : m.away}
-                      {isPositionDefined(m.away, resultData) && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: '4px' }}>(DEF)</span>}
+                      {awayName}
+                      {awayStatusColor === '#4ade80' && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: '4px' }}>(DEF)</span>}
                     </div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                       ELO: {m.predictions ? Math.round(m.predictions.elo_away) : '-'}
@@ -186,7 +288,7 @@ export default function NextMatches({ resultData, prevResultData }) {
                     </div>
                     {champAway !== null && (
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
-                        Camp: <span style={{ color: 'var(--accent)' }}>{renderProb(champAway, prevResultData?.teams[m.away]?.champion)}</span>
+                        Camp: <span style={{ color: 'var(--accent)' }}>{renderProb(champAway, prevResultData?.teams[awayCode]?.champion)}</span>
                       </div>
                     )}
                   </div>

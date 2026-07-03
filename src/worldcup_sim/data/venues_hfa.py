@@ -186,6 +186,7 @@ VENUE_STR_TO_KEY = {
     'Gillette Stadium, Foxborough': 'boston',
     'SoFi Stadium, Inglewood': 'los_angeles',
     'Estadio Azteca, Mexico City': 'mexico_city',
+    'Estadio Banorte, Ciudad de México': 'mexico_city',
     'Estadio BBVA, Guadalupe': 'monterrey',
     "Levi's Stadium, Santa Clara": 'san_francisco_bay',
     'MetLife Stadium, East Rutherford': 'new_york_new_jersey',

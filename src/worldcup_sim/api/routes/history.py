@@ -48,3 +48,18 @@ def get_snapshot(snapshot_id: str):
         data = json.load(f)
         
     return JSONResponse(content=data)
+
+@router.delete("/{snapshot_id}")
+def delete_snapshot(snapshot_id: str):
+    if not snapshot_id.startswith("snapshot_") or not snapshot_id.endswith(".json"):
+        raise HTTPException(status_code=400, detail="Invalid snapshot ID")
+        
+    filepath = HISTORY_DIR / snapshot_id
+    if not filepath.exists():
+        raise HTTPException(status_code=404, detail="Snapshot not found")
+        
+    try:
+        os.remove(filepath)
+        return {"status": "deleted", "id": snapshot_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

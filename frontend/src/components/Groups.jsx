@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { getFlagUrl } from '../flagMap';
 import { renderProb, renderRankDiff, getTeamStatusColor, isPositionDefined } from '../utils';
 
-export default function Groups({ resultData, prevResultData, teamsList }) {
+export default function Groups({ resultData, prevResultData, teamsList, actualStandings }) {
   const [activeGroup, setActiveGroup] = useState('A');
   const [viewMode, setViewMode] = useState('standings'); // "standings" or "stats"
   const [sortKey, setSortKey] = useState('points'); // points, gd, gf, ga, w, d, l, 1st, 2nd, 3rd, 4th, advance
@@ -160,6 +160,7 @@ export default function Groups({ resultData, prevResultData, teamsList }) {
           ))}
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', background: 'rgba(0,0,0,0.2)', padding: '0.3rem', borderRadius: '0.5rem' }}>
+          <button className="btn" onClick={() => setViewMode('actual')} style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', background: viewMode === 'actual' ? 'var(--accent)' : 'transparent' }}>Actual Table</button>
           <button className="btn" onClick={() => setViewMode('standings')} style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', background: viewMode === 'standings' ? 'var(--accent)' : 'transparent' }}>Probability Matrix</button>
           <button className="btn" onClick={() => setViewMode('stats')} style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', background: viewMode === 'stats' ? 'var(--accent)' : 'transparent' }}>Average Stats</button>
         </div>
@@ -177,10 +178,110 @@ export default function Groups({ resultData, prevResultData, teamsList }) {
         </div>
       </div>
 
-      <div className="glass-card" style={{ overflowX: 'auto' }}>
-        <h3 style={{ marginBottom: '1rem' }}>Group {activeGroup} {viewMode === 'standings' ? 'Probabilities' : 'Expected Averages'}</h3>
+      {viewMode === 'actual' ? (
+          actualStandings ? (
+        <>
+        <div className="glass-card" style={{ overflowX: 'auto' }}>
+        <h3 style={{ marginBottom: '1rem' }}>Group {activeGroup} Actual Standings</h3>
+        <table className="custom-table" style={{ width: '100%' }}>
+          <thead>
+            <tr>
+              <th style={{ width: '30px', textAlign: 'center' }}>#</th>
+              <th style={{ width: '30%' }}>Team</th>
+              <th>PJ</th>
+              <th>Pts</th>
+              <th>W</th>
+              <th>D</th>
+              <th>L</th>
+              <th>GF</th>
+              <th>GA</th>
+              <th>GD</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(actualStandings.groups[activeGroup] || []).map((s, index) => {
+              const teamCode = s.team.code;
+              const played = s.wins + s.draws + s.losses;
+              return (
+              <tr key={teamCode}>
+                <td style={{ textAlign: 'center', color: 'var(--text-muted)' }}>{index + 1}</td>
+                <td className="team-cell" style={{ color: getTeamStatusColor(teamCode, resultData) || 'inherit' }}>
+                  {s.team.name}
+                  {isPositionDefined(teamCode, resultData) && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: '4px' }}>(DEF)</span>}
+                  <img src={getFlagUrl(teamCode)} className="flag-icon" style={{ width: 16, height: 12, marginLeft: 8 }} />
+                </td>
+                <td style={{ color: 'var(--text-muted)' }}>{played}</td>
+                <td style={{ fontWeight: 'bold', color: 'var(--accent)' }}>{s.points}</td>
+                <td>{s.wins}</td>
+                <td style={{ color: 'var(--text-muted)' }}>{s.draws}</td>
+                <td style={{ color: 'var(--text-muted)' }}>{s.losses}</td>
+                <td style={{ color: 'var(--success)' }}>{s.goals_for}</td>
+                <td>{s.goals_against}</td>
+                <td>{(s.goals_for - s.goals_against > 0 ? '+' : '')}{s.goals_for - s.goals_against}</td>
+              </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        </div>
         
-        {viewMode === 'standings' ? (
+        <div className="glass-card" style={{ marginTop: '2rem', overflowX: 'auto' }}>
+        <h3 style={{ marginBottom: '1rem' }}>Third Place Table (Top 8 Advance)</h3>
+        <table className="custom-table" style={{ width: '100%' }}>
+          <thead>
+            <tr>
+              <th style={{ width: '60px' }}>Rank</th>
+              <th style={{ width: '30%' }}>Team</th>
+              <th>Group</th>
+              <th>PJ</th>
+              <th>Pts</th>
+              <th>W</th>
+              <th>D</th>
+              <th>L</th>
+              <th>GF</th>
+              <th>GA</th>
+              <th>GD</th>
+            </tr>
+          </thead>
+          <tbody>
+            {actualStandings.third_places.map((s, index) => {
+              const teamCode = s.team.code;
+              const played = s.wins + s.draws + s.losses;
+              const gd = s.goals_for - s.goals_against;
+              return (
+              <tr key={teamCode} style={{ opacity: index >= 8 ? 0.5 : 1 }}>
+                <td style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span>#{index + 1}</span>
+                  </div>
+                </td>
+                <td className="team-cell" style={{ color: getTeamStatusColor(teamCode, resultData) || 'inherit' }}>
+                  {s.team.name}
+                  {isPositionDefined(teamCode, resultData) && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: '4px' }}>(DEF)</span>}
+                  <img src={getFlagUrl(teamCode)} className="flag-icon" style={{ width: 16, height: 12, marginLeft: 8 }} />
+                </td>
+                <td>{s.group_name}</td>
+                <td style={{ color: 'var(--text-muted)' }}>{played}</td>
+                <td style={{ fontWeight: 'bold', color: 'var(--accent)' }}>{s.points}</td>
+                <td>{s.wins}</td>
+                <td style={{ color: 'var(--text-muted)' }}>{s.draws}</td>
+                <td style={{ color: 'var(--text-muted)' }}>{s.losses}</td>
+                <td style={{ color: 'var(--success)' }}>{s.goals_for}</td>
+                <td>{s.goals_against}</td>
+                <td>{(gd > 0 ? '+' : '')}{gd}</td>
+              </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        </div>
+        </>
+          ) : (
+             <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>Cargando tabla real... (o no hay datos)</div>
+          )
+        ) : viewMode === 'standings' ? (
+        <div className="glass-card" style={{ overflowX: 'auto' }}>
+        <h3 style={{ marginBottom: '1rem' }}>Group {activeGroup} Probabilities</h3>
         <table className="custom-table" style={{ width: '100%' }}>
           <thead>
             <tr>
@@ -219,7 +320,10 @@ export default function Groups({ resultData, prevResultData, teamsList }) {
             })}
           </tbody>
         </table>
+        </div>
         ) : (
+        <div className="glass-card" style={{ overflowX: 'auto' }}>
+        <h3 style={{ marginBottom: '1rem' }}>Group {activeGroup} Expected Averages</h3>
         <table className="custom-table" style={{ width: '100%' }}>
           <thead>
             <tr>
@@ -252,8 +356,8 @@ export default function Groups({ resultData, prevResultData, teamsList }) {
                 </td>
                 <td style={{ fontWeight: 'bold', color: 'var(--accent)' }}>{(t.expected_points_group || 0).toFixed(2)}</td>
                 <td>{(t.expected_wins_group || 0).toFixed(2)}</td>
-                <td>{(t.expected_draws_group || 0).toFixed(2)}</td>
-                <td>{(t.expected_losses_group || 0).toFixed(2)}</td>
+                <td style={{ color: 'var(--text-muted)' }}>{(t.expected_draws_group || 0).toFixed(2)}</td>
+                <td style={{ color: 'var(--text-muted)' }}>{(t.expected_losses_group || 0).toFixed(2)}</td>
                 <td style={{ color: 'var(--success)' }}>{(t.expected_goals_for_group || 0).toFixed(2)}</td>
                 <td style={{ color: 'var(--danger)' }}>{(t.expected_goals_against_group || 0).toFixed(2)}</td>
                 <td style={{ fontWeight: 'bold' }}>{(t.expected_goal_diff > 0 ? '+' : '')}{t.expected_goal_diff.toFixed(2)}</td>
@@ -262,9 +366,10 @@ export default function Groups({ resultData, prevResultData, teamsList }) {
             })}
           </tbody>
         </table>
+        </div>
         )}
-      </div>
 
+      {viewMode !== 'actual' && (
       <div className="glass-card" style={{ marginTop: '2rem', overflowX: 'auto' }}>
         <h3 style={{ marginBottom: '1rem' }}>Global Best Third-Place Teams (Averages)</h3>
         <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
@@ -286,7 +391,7 @@ export default function Groups({ resultData, prevResultData, teamsList }) {
           </thead>
           <tbody>
             {thirdPlaceProbables.map((t, idx) => {
-              const prev = prevResultData ? prevResultData.teams[t.team_code] : null;
+              const prev = prevResultData?.teams?.[t.team_code];
               let prev3rdAdvance = undefined;
               if (prev) {
                 prev3rdAdvance = Math.max(0, prev.advance_to_r32 - (prev.group_position_probs['1st'] + prev.group_position_probs['2nd']));
@@ -304,9 +409,9 @@ export default function Groups({ resultData, prevResultData, teamsList }) {
                   <img src={getFlagUrl(t.team_code)} className="flag-icon" style={{ width: 16, height: 12, marginLeft: 8 }} />
                 </td>
                 <td>{t.group}</td>
-                <td style={{ fontWeight: 'bold' }}>{(t.expected_points_group || 0).toFixed(2)}</td>
+                <td style={{ fontWeight: 'bold', color: 'var(--accent)' }}>{(t.expected_points_group || 0).toFixed(2)}</td>
                 <td>{(t.expected_goal_diff > 0 ? '+' : '')}{t.expected_goal_diff.toFixed(2)}</td>
-                <td>{(t.expected_goals_for_group || 0).toFixed(2)}</td>
+                <td style={{ color: 'var(--success)' }}>{(t.expected_goals_for_group || 0).toFixed(2)}</td>
                 <td>{renderProb(t.group_position_probs['3rd'], prev?.group_position_probs['3rd'])}</td>
                 <td style={{ fontWeight: 'bold', color: 'var(--success)' }}>{renderProb(t.thirdPlaceAdvanceProb, prev3rdAdvance)}</td>
               </tr>
@@ -315,6 +420,7 @@ export default function Groups({ resultData, prevResultData, teamsList }) {
           </tbody>
         </table>
       </div>
+      )}
     </div>
   );
 }

@@ -42,8 +42,11 @@ class WorldCupSimulation:
             e_a = self.current_elos[team_a.code]
             
             identifier = (team_h.code, team_a.code)
+            identifier_rev = (team_a.code, team_h.code)
             if identifier in self.live_results:
-                g_h, g_a = self.live_results[identifier]
+                g_h, g_a, *pw = self.live_results[identifier]
+            elif identifier_rev in self.live_results:
+                g_a, g_h, *pw = self.live_results[identifier_rev]
             else:
                 m_id = i + 1
                 net_hfa = get_net_hfa(m_id, team_h.code, team_a.code)

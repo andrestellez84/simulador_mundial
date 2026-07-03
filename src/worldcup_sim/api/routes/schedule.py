@@ -17,6 +17,7 @@ class MatchOverride(BaseModel):
     away_code: str
     home_goals: Optional[int] = None
     away_goals: Optional[int] = None
+    penalty_winner: Optional[str] = None
 
 @router.get("/")
 def get_schedule(request: Request):
@@ -51,10 +52,11 @@ def get_schedule(request: Request):
         
         result_data = None
         gh = ga = None
+        pw = None
         if (t1.code, t2.code) in live_results:
-            gh, ga = live_results[(t1.code, t2.code)]
+            gh, ga, *pw = live_results[(t1.code, t2.code)]
         elif (t2.code, t1.code) in live_results:
-            ga, gh = live_results[(t2.code, t1.code)]
+            ga, gh, *pw = live_results[(t2.code, t1.code)]
             
         if gh is not None and ga is not None:
             w_e_home = expected_score(elo_h, elo_a, net_hfa)
@@ -79,7 +81,8 @@ def get_schedule(request: Request):
                 "gh": gh,
                 "ga": ga,
                 "surprise": surprise,
-                "surpriser": surpriser
+                "surpriser": surpriser,
+                "penalty_winner": pw[0] if pw else None
             }
         
         matches.append({
@@ -154,7 +157,7 @@ def get_live_results(request: Request):
     """Devuelve los resultados inyectados manualmente o scrapeados"""
     # dict returned as list of objects for JSON serialization
     res = request.app.state.live_results
-    return {"live_results": [{"home": h, "away": a, "gh": gh, "ga": ga} for (h, a), (gh, ga) in res.items()]}
+    return {"live_results": [{"home": h, "away": a, "gh": gh, "ga": ga, "penalty_winner": pw[0] if pw else None} for (h, a), (gh, ga, *pw) in res.items()]}
 
 from ...data.live_results_store import save_live_results
 
@@ -178,7 +181,13 @@ def set_live_result(override: MatchOverride, request: Request):
             
         return {"status": "ok", "message": "Live result cleared successfully"}
         
-    request.app.state.live_results[key] = (override.home_goals, override.away_goals)
+    if key_rev in request.app.state.live_results:
+        del request.app.state.live_results[key_rev]
+
+    if override.penalty_winner:
+        request.app.state.live_results[key] = (override.home_goals, override.away_goals, override.penalty_winner)
+    else:
+        request.app.state.live_results[key] = (override.home_goals, override.away_goals)
     save_live_results(request.app.state.live_results)
     
     return {"status": "ok", "message": "Live result overrided successfully"}
@@ -199,10 +208,23 @@ def sync_live_results_from_web(request: Request):
     for (home, away), (gh, ga) in latest_results.items():
         key = (home, away)
         key_rev = (away, home)
-        # Always use the orientation from eloratings, or update if we had it reverse
+        
+        # Preserve manual penalty winner if exists
+        existing_pw = None
+        for k in (key, key_rev):
+            if k in request.app.state.live_results:
+                val = request.app.state.live_results[k]
+                if len(val) == 3:
+                    existing_pw = val[2]
+                    
         if key_rev in request.app.state.live_results:
             del request.app.state.live_results[key_rev]
-        request.app.state.live_results[key] = (gh, ga)
+            
+        if gh == ga and existing_pw:
+            request.app.state.live_results[key] = (gh, ga, existing_pw)
+        else:
+            request.app.state.live_results[key] = (gh, ga)
+            
         count += 1
         
     if count > 0:

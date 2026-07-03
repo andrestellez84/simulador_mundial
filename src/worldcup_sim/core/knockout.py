@@ -32,47 +32,50 @@ def simulate_knockout_match(
     net_hfa = get_net_hfa(match_id, home_code, away_code)
     lam_h, lam_a = calculate_lambdas(home_elo, away_elo, kwargs_hfa=net_hfa)
     
+    pw = None
     if match_tuple in live_results:
-        g_h, g_a = live_results[match_tuple]
+        g_h, g_a, *pw = live_results[match_tuple]
     elif match_tuple_rev in live_results:
-        g_a, g_h = live_results[match_tuple_rev]
+        g_a, g_h, *pw = live_results[match_tuple_rev]
     else:
         g_h, g_a = simulate_match_exact(lam_h, lam_a)
     
     home_win_penalties = None
     
     if g_h == g_a:
-        # Extra time
-        et_h, et_a = simulate_extra_time(lam_h, lam_a)
-        g_h += et_h
-        g_a += et_a
-        
-        if g_h == g_a:
-            # Penalties
-            winner_side = simulate_penalties(home_elo, away_elo)
-            if winner_side == "home":
-                home_win_penalties = True
-            else:
-                home_win_penalties = False
+        if pw:
+            home_win_penalties = pw[0] == home_code
+        else:
+            # Extra time
+            et_h, et_a = simulate_extra_time(lam_h, lam_a)
+            g_h += et_h
+            g_a += et_a
+            
+            if g_h == g_a:
+                # Penalties
+                winner_side = simulate_penalties(home_elo, away_elo)
+                if winner_side == "home":
+                    home_win_penalties = True
+                else:
+                    home_win_penalties = False
                 
+    # Determinar ganador
     # Determinar ganador
     if g_h > g_a or home_win_penalties is True:
         winner = home_code
         loser = away_code
-        # Para el factor G en empates con penales, la diferencia de goles para formula ELO puede contarse como 1
         w_h, w_a = 1.0, 0.0
-        g_h_eff, g_a_eff = (g_h + 1, g_a) if home_win_penalties is True else (g_h, g_a)
     else:
         winner = away_code
         loser = home_code
         w_h, w_a = 0.0, 1.0
-        g_h_eff, g_a_eff = (g_h, g_a + 1) if home_win_penalties is False else (g_h, g_a)
         
     # Update ELO (K=60)
+    # Si fue empate en goles (definido por penales), la formula de elo.py lo trata como empate (w=0.5) al recibir g_h == g_a
     net_hfa = get_net_hfa(match_id, home_code, away_code)
     new_home_elo, new_away_elo = update_elo(
         home_elo, away_elo, 
-        goals_home=g_h_eff, goals_away=g_a_eff, 
+        goals_home=g_h, goals_away=g_a, 
         hfa=net_hfa, k=60
     )
     
