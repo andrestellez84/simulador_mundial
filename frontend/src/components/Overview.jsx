@@ -298,8 +298,38 @@ export default function Overview({ resultData, prevResultData, teamsList, actual
   const prevSortedTeams = getSortedTeams(prevResultData);
   const elimStatus = getEliminationStatus();
 
-  const isGroupStageFinished = Object.values(resultData.teams).every(t => t.advance_to_r32 < 0.001 || t.advance_to_r32 > 0.999);
-  const stageKey = isGroupStageFinished ? 'r16' : 'r32';
+  const getCurrentTournamentStageKey = (matchesList) => {
+    if (!matchesList || matchesList.length === 0) return 'r32';
+    
+    // 1. Check if group stage is finished
+    const groupMatches = matchesList.filter(m => m.stage.startsWith("Group"));
+    const groupFinished = groupMatches.length === 72 && groupMatches.every(m => m.result && typeof m.result.gh === 'number');
+    if (!groupFinished) return 'r32';
+
+    // 2. Check if R32 is finished
+    const r32Matches = matchesList.filter(m => m.stage === "Round of 32");
+    const r32Finished = r32Matches.length === 16 && r32Matches.every(m => m.result && typeof m.result.gh === 'number');
+    if (!r32Finished) return 'r16';
+
+    // 3. Check if R16 is finished
+    const r16Matches = matchesList.filter(m => m.stage === "Round of 16");
+    const r16Finished = r16Matches.length === 8 && r16Matches.every(m => m.result && typeof m.result.gh === 'number');
+    if (!r16Finished) return 'qf';
+
+    // 4. Check if QF is finished
+    const qfMatches = matchesList.filter(m => m.stage === "Quarter-Finals");
+    const qfFinished = qfMatches.length === 4 && qfMatches.every(m => m.result && typeof m.result.gh === 'number');
+    if (!qfFinished) return 'sf';
+
+    // 5. Check if SF is finished
+    const sfMatches = matchesList.filter(m => m.stage === "Semi-Finals");
+    const sfFinished = sfMatches.length === 2 && sfMatches.every(m => m.result && typeof m.result.gh === 'number');
+    if (!sfFinished) return 'final';
+
+    return 'champ';
+  };
+
+  const stageKey = getCurrentTournamentStageKey(matches);
 
   const renderTable = (title, start, end) => {
     const slice = sortedTeams.slice(start, end);
