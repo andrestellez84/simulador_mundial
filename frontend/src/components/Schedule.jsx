@@ -596,7 +596,7 @@ export default function Schedule({ onDataChange, activeInputs, resultData, teams
         <div className="glass-card" style={{ overflowX: 'auto' }}>
           <h3 style={{ marginBottom: '1rem', color: 'var(--text-main)' }}>Simulador de Apuestas (Cuota = 1 / Probabilidad)</h3>
           <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-            Simulación de 3 estrategias de apuestas sobre todos los partidos ya finalizados, asumiendo cuotas justas sin margen de la casa.
+            Simulación de 4 estrategias de apuestas sobre todos los partidos ya finalizados, asumiendo cuotas justas sin margen de la casa.
           </p>
           
           {(() => {
@@ -608,12 +608,14 @@ export default function Schedule({ onDataChange, activeInputs, resultData, teams
             let strat1 = { bet: 0, ret: 0, hits: 0, dailyData: {} };
             let strat2 = { bet: 0, ret: 0, hits: 0, dailyData: {} };
             let strat3 = { bet: 0, ret: 0, hits: 0, dailyData: {} };
+            let strat4 = { bet: 0, ret: 0, hits: 0, dailyData: {} };
 
             completedMatches.forEach(m => {
               const date = m.date;
               if (!strat1.dailyData[date]) strat1.dailyData[date] = { date, profit: 0 };
               if (!strat2.dailyData[date]) strat2.dailyData[date] = { date, profit: 0 };
               if (!strat3.dailyData[date]) strat3.dailyData[date] = { date, profit: 0 };
+              if (!strat4.dailyData[date]) strat4.dailyData[date] = { date, profit: 0 };
 
               const p = m.predictions;
               const probs = [
@@ -666,6 +668,33 @@ export default function Schedule({ onDataChange, activeInputs, resultData, teams
                 strat3.ret += ret3;
               }
               strat3.dailyData[date].profit += (ret3 - totalBet3);
+
+              // Strategy 4: Hybrid (Strategy 3 in groups, Strategy 2 in knockouts)
+              const isGroup = m.stage.startsWith("Group");
+              if (isGroup) {
+                const totalBet4 = bet3a + bet3b;
+                strat4.bet += totalBet4;
+                let ret4 = 0;
+                if (actualOutcome === bestChoice.type) {
+                  strat4.hits++;
+                  ret4 = bet3a * (1 / bestChoice.p);
+                  strat4.ret += ret4;
+                } else if (actualOutcome === secondChoice.type) {
+                  strat4.hits++;
+                  ret4 = bet3b * (1 / secondChoice.p);
+                  strat4.ret += ret4;
+                }
+                strat4.dailyData[date].profit += (ret4 - totalBet4);
+              } else {
+                strat4.bet += bet2;
+                let ret4 = 0;
+                if (actualOutcome === bestChoice.type) {
+                  strat4.hits++;
+                  ret4 = bet2 * (1 / bestChoice.p);
+                  strat4.ret += ret4;
+                }
+                strat4.dailyData[date].profit += (ret4 - bet2);
+              }
             });
 
             const processDaily = (dailyObj) => {
@@ -711,6 +740,7 @@ export default function Schedule({ onDataChange, activeInputs, resultData, teams
             strat1.history = processDaily(strat1.dailyData);
             strat2.history = processDaily(strat2.dailyData);
             strat3.history = processDaily(strat3.dailyData);
+            strat4.history = processDaily(strat4.dailyData);
 
             const renderStrat = (id, title, desc, strat) => {
               const balance = strat.ret - strat.bet;
@@ -791,6 +821,7 @@ export default function Schedule({ onDataChange, activeInputs, resultData, teams
                 {renderStrat("strat1", "Estrategia 1: Apostar $100 Fijos", "Apostar $100 al resultado con mayor probabilidad en cada partido.", strat1)}
                 {renderStrat("strat2", "Estrategia 2: Apostar Proporcional ($X)", "Apostar un monto igual al % de probabilidad del resultado favorito.", strat2)}
                 {renderStrat("strat3", "Estrategia 3: Doble Oportunidad Proporcional", "Apostar montos iguales a sus % de probabilidad a los DOS resultados más probables.", strat3)}
+                {renderStrat("strat4", "Estrategia 4: Híbrida (Estrat. 3 en Grupos / Estrat. 2 en Eliminatorias)", "Aplica Doble Oportunidad Proporcional en fase de grupos y cambia a Apuesta Proporcional al favorito en eliminación directa.", strat4)}
               </div>
             );
           })()}
