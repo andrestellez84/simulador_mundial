@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getFlagUrl } from '../flagMap';
 import { renderProb, renderRankDiff, getTeamStatusColor, isPositionDefined } from '../utils';
-import { getSchedule, getLiveResults } from '../api';
+import { getSchedule, getLiveResults, getHistoryList, getHistorySnapshot } from '../api';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ReferenceLine } from 'recharts';
 
 export default function Overview({ resultData, prevResultData, teamsList, actualStandings }) {
   const [sortKey, setSortKey] = useState('champion');
@@ -9,7 +10,66 @@ export default function Overview({ resultData, prevResultData, teamsList, actual
   
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('simulation'); // 'simulation' or 'classification'
+  const [activeTab, setActiveTab] = useState('simulation'); // 'simulation', 'classification', or 'history_timeline'
+
+  // History timeline states
+  const [historyTimelineData, setHistoryTimelineData] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [historyProgress, setHistoryProgress] = useState({ current: 0, total: 0 });
+  const [selectedHistoryTeams, setSelectedHistoryTeams] = useState(['FRA', 'ARG', 'BRA', 'MEX', 'ESP']);
+  const [targetMetric, setTargetMetric] = useState('champion');
+  const [timelineIndex, setTimelineIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [animationSpeed, setAnimationSpeed] = useState(1000);
+
+  useEffect(() => {
+    if (activeTab === 'history_timeline' && historyTimelineData.length === 0 && !loadingHistory) {
+      const loadAllHistory = async () => {
+        setLoadingHistory(true);
+        try {
+          const res = await getHistoryList();
+          const snapshots = (res.snapshots || []).sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+          
+          if (snapshots.length > 0) {
+            setHistoryProgress({ current: 0, total: snapshots.length });
+            const loaded = [];
+            for (let i = 0; i < snapshots.length; i++) {
+              setHistoryProgress(prev => ({ ...prev, current: i + 1 }));
+              const data = await getHistorySnapshot(snapshots[i].id);
+              loaded.push({
+                timestamp: snapshots[i].timestamp,
+                label: snapshots[i].label,
+                teams: data.teams || {}
+              });
+            }
+            setHistoryTimelineData(loaded);
+            setTimelineIndex(loaded.length - 1); // Start at latest
+          }
+        } catch (e) {
+          console.error("Error loading history timeline:", e);
+        } finally {
+          setLoadingHistory(false);
+        }
+      };
+      loadAllHistory();
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    let interval = null;
+    if (isPlaying && historyTimelineData.length > 0) {
+      interval = setInterval(() => {
+        setTimelineIndex(prev => {
+          if (prev >= historyTimelineData.length - 1) {
+            setIsPlaying(false); // Stop playing when reaching the end
+            return prev;
+          }
+          return prev + 1;
+        });
+      }, animationSpeed);
+    }
+    return () => clearInterval(interval);
+  }, [isPlaying, historyTimelineData, animationSpeed]);
 
   useEffect(() => {
     Promise.all([getSchedule(), getLiveResults()]).then(([scheduleRes, lrRes]) => {
@@ -416,6 +476,13 @@ export default function Overview({ resultData, prevResultData, teamsList, actual
         >
           Clasificación General
         </button>
+        <button 
+          className="btn" 
+          onClick={() => setActiveTab('history_timeline')} 
+          style={{ background: activeTab === 'history_timeline' ? 'var(--accent)' : 'var(--bg-dark)', opacity: activeTab === 'history_timeline' ? 1 : 0.7 }}
+        >
+          Línea de Tiempo de Probabilidades
+        </button>
       </div>
 
       {loading ? (
@@ -427,11 +494,11 @@ export default function Overview({ resultData, prevResultData, teamsList, actual
           {renderTable('Contenders (17 - 32)', 16, 32)}
           {renderTable('Underdogs (33 - 48)', 32, 48)}
         </>
-      ) : (
+      ) : activeTab === 'classification' ? (
         <div style={{ overflowX: 'auto' }}>
           <h2 style={{ marginBottom: '1rem', color: 'var(--accent)' }}>Clasificación General del Mundial</h2>
           <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', fontSize: '0.9rem' }}>
-            Posiciones oficiales de los equipos basadas en la fase de grupos y eliminación directa. Los eliminados se ubican de acuerdo a la ronda de eliminación y rendimiento oficial.
+            Posiciones oficiales de los equipos basadas en la fase de grupos y eliminación directa.
           </p>
           <table className="custom-table" style={{ fontSize: '0.9rem', width: '100%', minWidth: '800px' }}>
             <thead>
@@ -451,29 +518,25 @@ export default function Overview({ resultData, prevResultData, teamsList, actual
             </thead>
             <tbody>
               {(() => {
-                const genClass = getGeneralClassification();
-                return genClass.map((t, idx) => {
-                  const rank = idx + 1;
-                  const isElim = elimStatus[t.code]?.eliminated;
-                  
+                const teamsList = getGeneralClassification();
+                return teamsList.map((t, index) => {
+                  const isAlive = !elimStatus[t.code]?.eliminated;
                   return (
-                    <tr key={t.code} style={{ opacity: isElim ? 0.65 : 1, color: isElim ? 'var(--text-muted)' : 'inherit' }}>
-                      <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{rank}</td>
-                      <td className="team-cell" style={{ paddingLeft: '1rem', fontWeight: isElim ? 'normal' : 'bold' }}>
+                    <tr key={t.code} style={{ opacity: isAlive ? 1 : 0.65 }}>
+                      <td style={{ textAlign: 'center', fontWeight: 'bold', color: 'var(--text-muted)' }}>{index + 1}</td>
+                      <td className="team-cell" style={{ paddingLeft: '1rem', fontWeight: 'bold' }}>
                         <img src={getFlagUrl(t.code)} alt={t.code} className="flag-icon" />
                         {t.name}
-                        {isElim && <span style={{ fontSize: '0.7rem', color: '#ef4444', marginLeft: '6px' }}>(Eliminado)</span>}
+                        {!isAlive && <span style={{ fontSize: '0.65rem', color: '#ef4444', marginLeft: '4px' }}>(Eliminado)</span>}
                       </td>
-                      <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{t.pts}</td>
+                      <td style={{ textAlign: 'center', color: '#fbbf24', fontWeight: 'bold' }}>{t.pts}</td>
                       <td style={{ textAlign: 'center' }}>{t.pj}</td>
                       <td style={{ textAlign: 'center' }}>{t.pg}</td>
                       <td style={{ textAlign: 'center' }}>{t.pe}</td>
                       <td style={{ textAlign: 'center' }}>{t.pp}</td>
                       <td style={{ textAlign: 'center' }}>{t.gf}</td>
                       <td style={{ textAlign: 'center' }}>{t.gc}</td>
-                      <td style={{ textAlign: 'center', color: t.dif > 0 ? '#4ade80' : t.dif < 0 ? '#ef4444' : 'inherit', fontWeight: 'bold' }}>
-                        {t.dif > 0 ? `+${t.dif}` : t.dif}
-                      </td>
+                      <td style={{ textAlign: 'center', color: t.dif > 0 ? '#4ade80' : t.dif < 0 ? '#ef4444' : 'inherit', fontWeight: 'bold' }}>{t.dif > 0 ? `+${t.dif}` : t.dif}</td>
                       <td style={{ textAlign: 'right', paddingRight: '1rem', fontWeight: 'bold' }}>{t.rend.toFixed(1)}%</td>
                     </tr>
                   );
@@ -482,7 +545,295 @@ export default function Overview({ resultData, prevResultData, teamsList, actual
             </tbody>
           </table>
         </div>
-      )}
+      ) : activeTab === 'history_timeline' ? (
+        loadingHistory ? (
+          <div style={{ textAlign: 'center', padding: '4.5rem 2rem' }}>
+            <div style={{ fontSize: '1.4rem', marginBottom: '1rem', color: 'var(--accent)', fontWeight: 'bold' }}>
+              Cargando historial de probabilidades...
+            </div>
+            <div style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
+              Descargando instantánea {historyProgress.current} de {historyProgress.total}
+            </div>
+            <div style={{ width: '100%', maxWidth: '400px', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', margin: '0 auto', overflow: 'hidden', position: 'relative' }}>
+              <div style={{ height: '100%', background: 'var(--accent)', width: `${(historyProgress.current / historyProgress.total) * 100}%`, transition: 'width 0.1s ease-out' }} />
+            </div>
+          </div>
+        ) : historyTimelineData.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+            No se encontraron instantáneas de historial.
+          </div>
+        ) : (() => {
+          const colors = [
+            '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+            '#ec4899', '#14b8a6', '#f97316', '#a855f7', '#06b6d4',
+            '#6366f1', '#84cc16', '#22c55e', '#0ea5e9', '#d946ef'
+          ];
+          
+          const chartData = historyTimelineData.map(s => {
+            const row = { name: s.label };
+            selectedHistoryTeams.forEach(code => {
+              const val = s.teams[code]?.[targetMetric] || 0;
+              row[code] = parseFloat((val * 100).toFixed(1));
+            });
+            return row;
+          });
+
+          return (
+            <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                  <h2 style={{ color: 'var(--accent)', margin: 0 }}>Línea de Tiempo de Probabilidades</h2>
+                  <p style={{ color: 'var(--text-muted)', margin: '0.3rem 0 0', fontSize: '0.9rem' }}>
+                    Visualiza y reproduce la evolución de las probabilidades de las selecciones a lo largo del torneo.
+                  </p>
+                </div>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Métrica:</span>
+                  <select
+                    value={targetMetric}
+                    onChange={e => setTargetMetric(e.target.value)}
+                    className="btn"
+                    style={{ padding: '0.5rem 1rem', background: 'var(--bg-dark)', color: 'white', border: '1px solid var(--border-color)', borderRadius: '0.5rem' }}
+                  >
+                    <option value="champion">Campeón</option>
+                    <option value="advance_to_final">Llegar a la Final</option>
+                    <option value="advance_to_sf">Semifinales</option>
+                    <option value="advance_to_qf">Cuartos de Final</option>
+                    <option value="advance_to_r16">Octavos de Final</option>
+                    <option value="advance_to_r32">Dieciseisavos (R32)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1.8fr 1.2fr', gap: '2rem', minHeight: '400px' }}>
+                {/* Tendencia */}
+                <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
+                  <h3 style={{ marginBottom: '1rem', color: 'var(--text-main)' }}>Tendencia Histórica</h3>
+                  <div style={{ flex: 1, minHeight: '350px' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={chartData} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                        <XAxis dataKey="name" stroke="#888" fontSize={11} />
+                        <YAxis stroke="#888" fontSize={11} unit="%" />
+                        <Tooltip 
+                          contentStyle={{ backgroundColor: '#111', border: '1px solid #333', borderRadius: '4px' }}
+                          formatter={(value) => `${value}%`}
+                        />
+                        <Legend wrapperStyle={{ paddingTop: '10px' }} />
+                        
+                        {historyTimelineData[timelineIndex] && (
+                          <ReferenceLine 
+                            x={historyTimelineData[timelineIndex].label} 
+                            stroke="var(--accent)" 
+                            strokeWidth={2} 
+                            strokeDasharray="5 5"
+                          />
+                        )}
+
+                        {selectedHistoryTeams.map((code, idx) => (
+                          <Line
+                            key={code}
+                            type="monotone"
+                            dataKey={code}
+                            stroke={colors[idx % colors.length]}
+                            strokeWidth={3}
+                            dot={{ r: 2 }}
+                            activeDot={{ r: 6 }}
+                            name={teamsList?.find(t => t.code === code)?.name || code}
+                          />
+                        ))}
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Reproductor y ranking */}
+                <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--accent)' }}>
+                        {historyTimelineData[timelineIndex]?.label}
+                      </span>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                        Snapshot {timelineIndex + 1} / {historyTimelineData.length}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <button 
+                        className="btn"
+                        onClick={() => setIsPlaying(!isPlaying)}
+                        style={{ 
+                          background: isPlaying ? 'var(--danger)' : 'var(--success)', 
+                          color: 'white', 
+                          minWidth: '80px',
+                          padding: '0.5rem 1rem' 
+                        }}
+                      >
+                        {isPlaying ? 'Pausa' : 'Reproducir'}
+                      </button>
+
+                      <select
+                        value={animationSpeed}
+                        onChange={e => setAnimationSpeed(parseInt(e.target.value))}
+                        className="btn"
+                        style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
+                      >
+                        <option value={2000}>Lento (2s)</option>
+                        <option value={1000}>Normal (1s)</option>
+                        <option value={500}>Rápido (0.5s)</option>
+                        <option value={250}>Súper Rápido (0.25s)</option>
+                      </select>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <input 
+                        type="range"
+                        min="0"
+                        max={historyTimelineData.length - 1}
+                        value={timelineIndex}
+                        onChange={e => {
+                          setIsPlaying(false);
+                          setTimelineIndex(parseInt(e.target.value));
+                        }}
+                        style={{ flex: 1, accentColor: 'var(--accent)' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.8rem', overflowY: 'auto', maxHeight: '350px', paddingRight: '0.5rem' }}>
+                    <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                      Ranking Probabilidades en esta fecha:
+                    </h4>
+                    {(() => {
+                      const currentSnap = historyTimelineData[timelineIndex];
+                      if (!currentSnap) return null;
+                      
+                      const sortedSlice = selectedHistoryTeams.map(code => {
+                        const prob = currentSnap.teams[code]?.[targetMetric] || 0;
+                        return { code, prob };
+                      }).sort((a,b) => b.prob - a.prob);
+
+                      if (sortedSlice.length === 0) {
+                        return <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'center', marginTop: '2rem' }}>Selecciona países abajo para comparar.</div>;
+                      }
+
+                      return sortedSlice.map(({ code, prob }, index) => {
+                        const teamInfo = teamsList?.find(t => t.code === code);
+                        const colorIndex = selectedHistoryTeams.indexOf(code);
+                        const barColor = colors[colorIndex % colors.length] || 'var(--accent)';
+                        
+                        return (
+                          <div key={code} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                            <span style={{ minWidth: '24px', textAlign: 'center', fontWeight: 'bold', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                              {index + 1}
+                            </span>
+                            <img src={getFlagUrl(code)} alt={code} style={{ width: '20px', height: '15px', borderRadius: '2px' }} />
+                            <div style={{ flex: 1 }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.2rem' }}>
+                                <span style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>{teamInfo?.name || code}</span>
+                                <span style={{ fontWeight: 'bold', color: barColor }}>{(prob * 100).toFixed(1)}%</span>
+                              </div>
+                              <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
+                                <div 
+                                  style={{ 
+                                    height: '100%', 
+                                    background: barColor, 
+                                    width: `${prob * 100}%`, 
+                                    transition: 'width 0.3s ease-out' 
+                                  }} 
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                </div>
+              </div>
+
+              {/* Selección de Equipos */}
+              <div className="glass-card" style={{ padding: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', flexWrap: 'wrap', gap: '1rem' }}>
+                  <div>
+                    <h3 style={{ margin: 0, color: 'var(--text-main)' }}>Selección de Equipos</h3>
+                    <p style={{ color: 'var(--text-muted)', margin: '0.2rem 0 0', fontSize: '0.85rem' }}>
+                      Selecciona qué países deseas incluir en la comparación (máximo 15 recomendados).
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button 
+                      className="btn" 
+                      onClick={() => setSelectedHistoryTeams(teamsList?.map(t => t.code) || [])}
+                      style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', background: 'var(--bg-dark)' }}
+                    >
+                      Seleccionar Todos
+                    </button>
+                    <button 
+                      className="btn" 
+                      onClick={() => {
+                        const alive = teamsList?.filter(t => !elimStatus[t.code]?.eliminated).map(t => t.code) || [];
+                        setSelectedHistoryTeams(alive);
+                      }}
+                      style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', background: 'var(--bg-dark)' }}
+                    >
+                      Solo Vivos
+                    </button>
+                    <button 
+                      className="btn" 
+                      onClick={() => setSelectedHistoryTeams([])}
+                      style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', background: 'var(--bg-dark)' }}
+                    >
+                      Limpiar Todos
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '0.6rem', maxHeight: '180px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                  {(teamsList || []).sort((a,b) => a.name.localeCompare(b.name)).map(t => {
+                    const isSelected = selectedHistoryTeams.includes(t.code);
+                    const isAlive = !elimStatus[t.code]?.eliminated;
+                    return (
+                      <div 
+                        key={t.code}
+                        onClick={() => {
+                          if (isSelected) {
+                            setSelectedHistoryTeams(selectedHistoryTeams.filter(c => c !== t.code));
+                          } else {
+                            setSelectedHistoryTeams([...selectedHistoryTeams, t.code]);
+                          }
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          padding: '0.4rem 0.6rem',
+                          borderRadius: '4px',
+                          background: isSelected ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255,255,255,0.02)',
+                          border: `1px solid ${isSelected ? 'var(--accent)' : isAlive ? 'rgba(255,255,255,0.08)' : 'rgba(239, 68, 68, 0.2)'}`,
+                          cursor: 'pointer',
+                          opacity: isAlive ? 1 : 0.6,
+                          transition: 'all 0.15s ease'
+                        }}
+                        title={isAlive ? 'Activo en el torneo' : 'Eliminado'}
+                      >
+                        <img src={getFlagUrl(t.code)} alt={t.code} style={{ width: '16px', height: '12px' }} />
+                        <span style={{ fontSize: '0.75rem', fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {t.code}
+                        </span>
+                        {!isAlive && <span style={{ fontSize: '0.6rem', color: '#ef4444', marginLeft: 'auto' }}>❌</span>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          );
+        })()
+      ) : null}
     </div>
   );
-}
+};
