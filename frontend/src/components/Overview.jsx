@@ -22,34 +22,39 @@ export default function Overview({ resultData, prevResultData, teamsList, actual
   const [isPlaying, setIsPlaying] = useState(false);
   const [animationSpeed, setAnimationSpeed] = useState(1000);
 
-  const timelineIndexRef = useRef(timelineIndex);
-  useEffect(() => {
-    timelineIndexRef.current = timelineIndex;
-  }, [timelineIndex]);
-
   // GIF states
   const [gifDuration, setGifDuration] = useState(5);
   const [generatingGif, setGeneratingGif] = useState(false);
 
-  const handleDownloadGif = () => {
+  const handleDownloadGif = async () => {
     if (selectedHistoryTeams.length === 0) {
       alert("Por favor selecciona al menos un equipo.");
       return;
     }
     setGeneratingGif(true);
-    const teamsParam = selectedHistoryTeams.join(",");
-    const url = `/api/history/generate_gif?teams=${teamsParam}&metric=${targetMetric}&duration=${gifDuration}`;
-    
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `probabilidades_${targetMetric}.gif`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    setTimeout(() => {
+    try {
+      const teamsParam = selectedHistoryTeams.join(",");
+      const url = `/api/history/generate_gif?teams=${teamsParam}&metric=${targetMetric}&duration=${gifDuration}`;
+      
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Failed to generate GIF");
+      
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = `probabilidades_${targetMetric}.gif`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (e) {
+      console.error("Error generating GIF:", e);
+      alert("Hubo un error al generar o descargar el GIF.");
+    } finally {
       setGeneratingGif(false);
-    }, 4000);
+    }
   };
 
   useEffect(() => {
@@ -90,12 +95,12 @@ export default function Overview({ resultData, prevResultData, teamsList, actual
     let interval = null;
     if (isPlaying && historyTimelineData.length > 0) {
       interval = setInterval(() => {
-        const nextIndex = timelineIndexRef.current + 1;
-        if (nextIndex >= historyTimelineData.length) {
-          setIsPlaying(false);
-        } else {
-          setTimelineIndex(nextIndex);
-        }
+        setTimelineIndex(prev => {
+          if (prev >= historyTimelineData.length - 1) {
+            return 0; // Loop back to start
+          }
+          return prev + 1;
+        });
       }, animationSpeed);
     }
     return () => clearInterval(interval);
@@ -599,11 +604,15 @@ export default function Overview({ resultData, prevResultData, teamsList, actual
             '#6366f1', '#84cc16', '#22c55e', '#0ea5e9', '#d946ef'
           ];
           
-          const chartData = historyTimelineData.map(s => {
+          const chartData = historyTimelineData.map((s, idx) => {
             const row = { name: s.label };
             selectedHistoryTeams.forEach(code => {
-              const val = s.teams[code]?.[targetMetric] || 0;
-              row[code] = parseFloat((val * 100).toFixed(1));
+              if (idx <= timelineIndex) {
+                const val = s.teams[code]?.[targetMetric] || 0;
+                row[code] = parseFloat((val * 100).toFixed(1));
+              } else {
+                row[code] = undefined; // Do not draw future points
+              }
             });
             return row;
           });
@@ -694,14 +703,10 @@ export default function Overview({ resultData, prevResultData, teamsList, actual
                       <button 
                         className="btn"
                         onClick={() => {
-                          if (!isPlaying) {
-                            if (timelineIndexRef.current >= historyTimelineData.length - 1) {
-                              setTimelineIndex(0);
-                            }
-                            setIsPlaying(true);
-                          } else {
-                            setIsPlaying(false);
+                          if (!isPlaying && timelineIndex >= historyTimelineData.length - 1) {
+                            setTimelineIndex(0);
                           }
+                          setIsPlaying(!isPlaying);
                         }}
                         style={{ 
                           background: isPlaying ? 'var(--danger)' : 'var(--success)', 
