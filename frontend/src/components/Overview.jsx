@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getFlagUrl } from '../flagMap';
 import { renderProb, renderRankDiff, getTeamStatusColor, isPositionDefined } from '../utils';
 import { getSchedule, getLiveResults, getHistoryList, getHistorySnapshot } from '../api';
@@ -21,6 +21,11 @@ export default function Overview({ resultData, prevResultData, teamsList, actual
   const [timelineIndex, setTimelineIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [animationSpeed, setAnimationSpeed] = useState(1000);
+
+  const timelineIndexRef = useRef(timelineIndex);
+  useEffect(() => {
+    timelineIndexRef.current = timelineIndex;
+  }, [timelineIndex]);
 
   // GIF states
   const [gifDuration, setGifDuration] = useState(5);
@@ -85,23 +90,16 @@ export default function Overview({ resultData, prevResultData, teamsList, actual
     let interval = null;
     if (isPlaying && historyTimelineData.length > 0) {
       interval = setInterval(() => {
-        setTimelineIndex(prev => {
-          if (prev < historyTimelineData.length - 1) {
-            return prev + 1;
-          }
-          return prev;
-        });
+        const nextIndex = timelineIndexRef.current + 1;
+        if (nextIndex >= historyTimelineData.length) {
+          setIsPlaying(false);
+        } else {
+          setTimelineIndex(nextIndex);
+        }
       }, animationSpeed);
     }
     return () => clearInterval(interval);
   }, [isPlaying, historyTimelineData.length, animationSpeed]);
-
-  // Handle auto-stop at the end of timeline
-  useEffect(() => {
-    if (timelineIndex >= historyTimelineData.length - 1 && isPlaying) {
-      setIsPlaying(false);
-    }
-  }, [timelineIndex, historyTimelineData.length, isPlaying]);
 
   useEffect(() => {
     Promise.all([getSchedule(), getLiveResults()]).then(([scheduleRes, lrRes]) => {
@@ -696,10 +694,14 @@ export default function Overview({ resultData, prevResultData, teamsList, actual
                       <button 
                         className="btn"
                         onClick={() => {
-                          if (!isPlaying && timelineIndex >= historyTimelineData.length - 1) {
-                            setTimelineIndex(0);
+                          if (!isPlaying) {
+                            if (timelineIndexRef.current >= historyTimelineData.length - 1) {
+                              setTimelineIndex(0);
+                            }
+                            setIsPlaying(true);
+                          } else {
+                            setIsPlaying(false);
                           }
-                          setIsPlaying(!isPlaying);
                         }}
                         style={{ 
                           background: isPlaying ? 'var(--danger)' : 'var(--success)', 

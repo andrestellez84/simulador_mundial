@@ -29,6 +29,8 @@ dependencies = [
     "rich>=13.7",               # Logs y tablas bonitas
     "python-dotenv>=1.0",
     "tqdm>=4.66",
+    "pillow>=12.3.0",
+    "matplotlib>=3.11.0",
 ]
 
 [project.optional-dependencies]
