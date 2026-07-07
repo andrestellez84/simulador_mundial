@@ -22,6 +22,31 @@ export default function Overview({ resultData, prevResultData, teamsList, actual
   const [isPlaying, setIsPlaying] = useState(false);
   const [animationSpeed, setAnimationSpeed] = useState(1000);
 
+  // GIF states
+  const [gifDuration, setGifDuration] = useState(5);
+  const [generatingGif, setGeneratingGif] = useState(false);
+
+  const handleDownloadGif = () => {
+    if (selectedHistoryTeams.length === 0) {
+      alert("Por favor selecciona al menos un equipo.");
+      return;
+    }
+    setGeneratingGif(true);
+    const teamsParam = selectedHistoryTeams.join(",");
+    const url = `/api/history/generate_gif?teams=${teamsParam}&metric=${targetMetric}&duration=${gifDuration}`;
+    
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `probabilidades_${targetMetric}.gif`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    setTimeout(() => {
+      setGeneratingGif(false);
+    }, 4000);
+  };
+
   useEffect(() => {
     if (activeTab === 'history_timeline' && historyTimelineData.length === 0 && !loadingHistory) {
       const loadAllHistory = async () => {
@@ -660,10 +685,15 @@ export default function Overview({ resultData, prevResultData, teamsList, actual
                       </span>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                       <button 
                         className="btn"
-                        onClick={() => setIsPlaying(!isPlaying)}
+                        onClick={() => {
+                          if (!isPlaying && timelineIndex >= historyTimelineData.length - 1) {
+                            setTimelineIndex(0);
+                          }
+                          setIsPlaying(!isPlaying);
+                        }}
                         style={{ 
                           background: isPlaying ? 'var(--danger)' : 'var(--success)', 
                           color: 'white', 
@@ -680,11 +710,45 @@ export default function Overview({ resultData, prevResultData, teamsList, actual
                         className="btn"
                         style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
                       >
+                        <option value={10000}>Súper Lento (10s)</option>
                         <option value={2000}>Lento (2s)</option>
                         <option value={1000}>Normal (1s)</option>
                         <option value={500}>Rápido (0.5s)</option>
                         <option value={250}>Súper Rápido (0.25s)</option>
                       </select>
+                    </div>
+
+                    {/* Controles para descargar GIF */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem', padding: '0.8rem', background: 'rgba(255,255,255,0.02)', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Duración GIF:</span>
+                        <select 
+                          value={gifDuration}
+                          onChange={e => setGifDuration(parseInt(e.target.value))}
+                          className="btn"
+                          style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', width: '80px' }}
+                        >
+                          <option value={3}>3 seg</option>
+                          <option value={5}>5 seg</option>
+                          <option value={10}>10 seg</option>
+                          <option value={15}>15 seg</option>
+                          <option value={20}>20 seg</option>
+                        </select>
+                      </div>
+                      <button
+                        className="btn"
+                        onClick={handleDownloadGif}
+                        disabled={generatingGif}
+                        style={{ 
+                          background: 'var(--accent)', 
+                          color: 'black', 
+                          fontSize: '0.75rem', 
+                          padding: '0.4rem 0.8rem',
+                          alignSelf: 'flex-end'
+                        }}
+                      >
+                        {generatingGif ? 'Generando...' : 'Descargar GIF'}
+                      </button>
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
