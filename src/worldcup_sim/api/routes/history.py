@@ -111,7 +111,12 @@ def generate_gif(teams: str, metric: str = "champion", duration: float = 5.0):
                 ax1.plot(t, y_values[code][t], marker='o', color=team_colors[code], markersize=6)
 
         ax1.set_xlim(-0.5, len(x_labels) - 0.5)
-        ax1.set_ylim(0, 105)
+        # Set dynamic Y-limits based on maximum value up to t + 5% additional
+        max_prob_t = max(
+            [y_values[code][i] for code in team_codes for i in range(t+1)] + [10.0]
+        )
+        max_y = min(100.0, max_prob_t + 5.0)
+        ax1.set_ylim(0, max_y)
         ax1.set_ylabel("Probabilidad (%)", fontsize=10, color='lightgray')
         ax1.tick_params(colors='lightgray', labelsize=8)
         ax1.set_xticks(range(len(x_labels)))

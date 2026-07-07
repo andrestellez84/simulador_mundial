@@ -617,6 +617,18 @@ export default function Overview({ resultData, prevResultData, teamsList, actual
             return row;
           });
 
+          // Find max value plotted up to timelineIndex to scale Y-axis dynamically (+5% additional)
+          let maxVal = 10;
+          historyTimelineData.slice(0, timelineIndex + 1).forEach(s => {
+            selectedHistoryTeams.forEach(code => {
+              const val = (s.teams[code]?.[targetMetric] || 0) * 100;
+              if (val > maxVal) {
+                maxVal = val;
+              }
+            });
+          });
+          const computedMaxY = Math.min(100, Math.ceil(maxVal + 5));
+
           return (
             <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
@@ -654,7 +666,7 @@ export default function Overview({ resultData, prevResultData, teamsList, actual
                       <LineChart data={chartData} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#333" />
                         <XAxis dataKey="name" stroke="#888" fontSize={11} />
-                        <YAxis stroke="#888" fontSize={11} unit="%" />
+                        <YAxis stroke="#888" fontSize={11} unit="%" domain={[0, computedMaxY]} />
                         <Tooltip 
                           contentStyle={{ backgroundColor: '#111', border: '1px solid #333', borderRadius: '4px' }}
                           formatter={(value) => `${value}%`}
