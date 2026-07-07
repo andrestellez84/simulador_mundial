@@ -103,19 +103,20 @@ def generate_gif(teams: str, metric: str = "champion", duration: float = 5.0):
         ax1.set_facecolor('#18181b')
         ax2.set_facecolor('#18181b')
 
-        # 1. Line Chart
+        # 1. Line Chart using range(t+1) to align with numerical tick indices
         ax1.set_title(f"Evolucion de Probabilidades ({metric.upper()})", fontsize=12, fontweight='bold', color='white', pad=15)
         for code in team_codes:
-            ax1.plot(x_labels[:t+1], y_values[code][:t+1], label=TEAMS[code].name if code in TEAMS else code, color=team_colors[code], linewidth=2.5)
+            ax1.plot(range(t+1), y_values[code][:t+1], label=TEAMS[code].name if code in TEAMS else code, color=team_colors[code], linewidth=2.5)
             if t < len(x_labels):
-                ax1.plot(x_labels[t], y_values[code][t], marker='o', color=team_colors[code], markersize=6)
+                ax1.plot(t, y_values[code][t], marker='o', color=team_colors[code], markersize=6)
 
+        ax1.set_xlim(-0.5, len(x_labels) - 0.5)
         ax1.set_ylim(0, 105)
         ax1.set_ylabel("Probabilidad (%)", fontsize=10, color='lightgray')
         ax1.tick_params(colors='lightgray', labelsize=8)
         ax1.set_xticks(range(len(x_labels)))
         ax1.set_xticklabels(x_labels, rotation=45, ha='right')
-        ax1.grid(True, stroke_width=0.5, color='#333333', linestyle='--')
+        ax1.grid(True, linewidth=0.5, color='#333333', linestyle='--')
         ax1.legend(loc='upper left', fontsize=8, facecolor='#111', edgecolor='#333')
 
         # 2. Bar Chart
@@ -137,7 +138,7 @@ def generate_gif(teams: str, metric: str = "champion", duration: float = 5.0):
         ax2.set_xlim(0, 105)
         ax2.set_xlabel("Probabilidad (%)", fontsize=10, color='lightgray')
         ax2.tick_params(colors='lightgray', labelsize=9)
-        ax2.grid(True, stroke_width=0.5, color='#333333', linestyle='--', axis='x')
+        ax2.grid(True, linewidth=0.5, color='#333333', linestyle='--', axis='x')
 
         for bar in bars:
             width = bar.get_width()
@@ -164,6 +165,7 @@ def generate_gif(teams: str, metric: str = "champion", duration: float = 5.0):
     )
     out_buf.seek(0)
     return StreamingResponse(out_buf, media_type="image/gif", headers={"Content-Disposition": f"attachment; filename=probabilidades_{metric}.gif"})
+
 
 @router.get("/{snapshot_id}")
 def get_snapshot(snapshot_id: str):

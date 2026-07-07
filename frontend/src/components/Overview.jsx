@@ -80,21 +80,28 @@ export default function Overview({ resultData, prevResultData, teamsList, actual
     }
   }, [activeTab]);
 
+  // Handle player playback loop
   useEffect(() => {
     let interval = null;
     if (isPlaying && historyTimelineData.length > 0) {
       interval = setInterval(() => {
         setTimelineIndex(prev => {
-          if (prev >= historyTimelineData.length - 1) {
-            setIsPlaying(false); // Stop playing when reaching the end
-            return prev;
+          if (prev < historyTimelineData.length - 1) {
+            return prev + 1;
           }
-          return prev + 1;
+          return prev;
         });
       }, animationSpeed);
     }
     return () => clearInterval(interval);
-  }, [isPlaying, historyTimelineData, animationSpeed]);
+  }, [isPlaying, historyTimelineData.length, animationSpeed]);
+
+  // Handle auto-stop at the end of timeline
+  useEffect(() => {
+    if (timelineIndex >= historyTimelineData.length - 1 && isPlaying) {
+      setIsPlaying(false);
+    }
+  }, [timelineIndex, historyTimelineData.length, isPlaying]);
 
   useEffect(() => {
     Promise.all([getSchedule(), getLiveResults()]).then(([scheduleRes, lrRes]) => {
