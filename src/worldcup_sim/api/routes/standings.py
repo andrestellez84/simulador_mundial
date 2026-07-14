@@ -123,11 +123,14 @@ def get_actual_standings(request: Request, payload: ActualStandingsRequest = Non
             # En caso de empate en vivo asume penalties
             if gh > ga:
                 winner = t1
+                loser = t2
             elif ga > gh:
                 winner = t2
+                loser = t1
             else:
                 if pw:
                     winner = pw[0]
+                    loser = t2 if winner == t1 else t1
                 else:
                     # Si hay empate en live_results sin penales, aún no avanzamos
                     return
@@ -158,6 +161,17 @@ def get_actual_standings(request: Request, payload: ActualStandingsRequest = Non
                 if n_id not in actual_bracket:
                     actual_bracket[n_id] = ["", ""]
                 actual_bracket[n_id][n_idx] = winner
+
+            # Losers mapping for Semifinals to Third Place Match
+            loser_map = {
+                101: (103, 0),
+                102: (103, 1)
+            }
+            if m_id in loser_map:
+                n_id, n_idx = loser_map[m_id]
+                if n_id not in actual_bracket:
+                    actual_bracket[n_id] = ["", ""]
+                actual_bracket[n_id][n_idx] = loser
 
     for m in range(73, 104):
         advance_team(m)

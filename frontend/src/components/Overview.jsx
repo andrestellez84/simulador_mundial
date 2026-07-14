@@ -272,6 +272,7 @@ export default function Overview({ resultData, prevResultData, teamsList, actual
             if (id >= 73 && id <= 88) { stage = 'r32'; tier = 4; }
             else if (id >= 89 && id <= 96) { stage = 'r16'; tier = 5; }
             else if (id >= 97 && id <= 100) { stage = 'qf'; tier = 6; }
+            else if (id >= 101 && id <= 102) { stage = 'sf'; tier = 7; }
             status[loser] = { eliminated: true, stage, tier };
           }
           
